@@ -1,0 +1,33 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: arial;
+}
+
+.pad-small {
+  padding: 4px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row; 
+}
+
+.row-fill {
+  flex: 1 1 auto;
+  width: 100%; }
+
+.row-nofill {
+  flex: 0 0 auto; }
+
+.col-flex {
+  display: flex;
+  flex-direction: column; }
+
+.col-fill {
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: hidden; }
+
+.col-nofill {
+  flex: 0 0 auto; }

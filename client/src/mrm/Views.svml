@@ -1,0 +1,83 @@
+{
+import * as Models from './Models';
+import { Input, SimpleHeader, Tabs } from '../Components';
+}
+
+
+MainView<Models.Main>
+  .style { max-width: 900px; border: 1px solid #00F; }
+  #title:h1[pad-small] 'Managment Review'
+  #tabs:Tabs
+  init() {
+    this.tabs.addTab('a', new SectionA());
+    this.tabs.addTab('b', new SectionB());
+    this.tabs.selectFirstTab();
+  }
+
+SectionA[pad-small]
+  #title:h1 'Title Goes Here'
+
+SectionB[pad-small]
+  #title:h1 'Title Goes Here'
+
+/*
+
+  #newThread:AddText
+    onAdd() {
+      this.data.threads.active.setItem({
+        createdAt: new Date().toISOString(),
+        name: this.newThread.input.value,
+        messages: {}
+      });
+      this.newThread.input.value = '';
+    }
+  #threads:Threads $data.threads.active
+    onSelected(thread: Models.Thread) {
+      this.selectedThread.update(thread);
+    }
+  #selectedThread:Thread
+  render() {
+    if(this.selectedThread.data) {
+      this.selectedThread.update((this.data.threads.active as any)[this.selectedThread.data.key]);
+    } else {
+      this.selectedThread.update(SyncUtils.toArray(this.data.threads.active)[0]);
+    }
+  }
+  
+Threads<Models.Threads>
+  #list:SyncList({ item: ThreadItem }) $data
+    onSelected(v, thread) { this.emit('selected', thread); }
+
+ThreadItem<Models.Thread>[pad-small]
+  .style { border-bottom: 1px solid #CCC; }
+  #text $data.name
+  onClick() { this.emit('selected', this.data); }
+
+
+
+
+
+Thread<Models.Thread>
+  #header:ThreadHeader $data
+  #list:SyncList({ item: ThreadMessage }) $data.messages
+  #newMsg:AddText()
+    onAdd() {
+      this.data.messages.setItem({
+        text: this.newMsg.input.value
+      });
+      this.newMsg.input.value = '';
+    }
+  render() {
+    this.el.style.display = this.data ? 'block' : 'none';
+  }
+
+ThreadHeader<Models.Thread>[row]
+  #name:h2[pad-small row-fill] $data.name
+    .style { margin: 4px 0; }
+  #del:button[row-nofill material-icons] 'delete'
+    onClick() { this.data.parent.remove(this.data.key); }
+
+ThreadMessage<Models.ThreadMessage>[pad-small]
+  .style { border-bottom: 1px solid #CCC; }
+  #text $data.text
+*/

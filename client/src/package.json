@@ -1,0 +1,15 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack": "webpack --watch",
+    "svml": "node ./node_modules/syncnode-svml/index.js ."
+  },
+  "author": "Justin Kalweit",
+  "license": "ISC",
+  "dependencies": {
+    "syncnode-client": "github:syncnode/syncnode-client"
+  }
+}

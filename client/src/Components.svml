@@ -1,0 +1,155 @@
+
+Input({ twoway: true, labelWidth: '100px' })
+    .style { 
+        width: 100%;
+        display: flex; 
+    }
+    #label:span
+    #input:input
+        .style {
+            flex: 1;
+            font-size: 1em;
+            padding: 0.5em 0;
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(0,0,0,0.5);
+    }
+	onChange() { 
+        let val = this.input.value;
+        if(this.options.twoway && this.options.key) {
+            this.data.set(this.options.key, val);
+        }
+        this.emit('change', val); 
+    }
+    value() {
+        return this.input.value;
+    }
+    init() {
+        this.label.style.width = this.options.labelWidth;
+    }
+    render() {		
+        if(this.options.label) {
+            this.label.innerHTML = this.options.label;
+        }
+        this.label.style.display = this.options.label ? 'flex' : 'none';
+        if(this.data) {
+            this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+        }
+    }
+
+
+
+Modal({ hideOnClick: true })
+    @{
+        view: SyncView<SyncNode>;
+    }
+    .style { 
+        position: fixed;
+        left: 0; right: 0; top: 0; bottom: 0;
+        background-color: rgba(0,0,0,0.7);
+        overflow-y: scroll;
+        display: flex;
+        align-items: center;
+        justify-content: center;	
+    }
+    onClick() { if(this.options.hideOnClick) { this.hide(); } }
+    #viewContainer
+        onClick(e) { e.stopPropagation(); }
+    init() {
+        this.hide();
+        if(this.options.view) {
+            this.view = new this.options.view();
+            var _me = this;
+            let handler = function(eventName: string) {
+                if(eventName === 'hide') { _me.hide(); }
+                _me.emit.apply(_me, arguments);
+            };
+            this.view.onAny(handler.bind(this));
+            this.viewContainer.appendChild(this.view.el);
+        }
+    }
+    render() {
+        if(this.view) this.view.update(this.data);
+    }        
+
+SimpleHeader[row]
+    #title:span[row-fill]
+        .style { 
+            font-weight: bold; 
+            font-size: 1.5em;
+        }
+    #addBtn:button[row-nofill] 'Add' onClick() { this.emit('add') }
+    showButtons(val: boolean) {
+        this.addBtn.style.display = val ? 'flex' : 'none';
+    }
+    init() {
+        this.title.innerHTML = this.options.title;
+    }
+
+
+Tabs
+  @{
+    selectedItem: TabHeaderItem;
+    tabsArr: Tab[] = [];
+  }
+  #headers[row]
+    .style { border-bottom: 1px solid #CCC; }
+  #tabs:div
+  addTab(title: string, view: SyncView<SyncNode>) {
+    let tab = new Tab();
+    tab.header = new TabHeaderItem({ text: title });
+    tab.header.tabsContainer = this;
+    tab.header.init();
+    tab.view = view;
+    tab.view.init();
+    tab.init();
+
+    tab.header.on('selected', () => {
+      this.selectedItem = tab.header;
+      this.emit('selected', this.selectedItem);
+      this.tabs.innerHTML = '';
+      this.tabs.appendChild(tab.view.el);
+    });
+
+    this.headers.appendChild(tab.header.el);
+    this.tabsArr.push(tab);
+  }
+  selectFirstTab() {
+    if(this.tabsArr.length) {
+        this.tabsArr[0].header.select();
+    }
+  }
+
+TabHeaderItem[row-nofill pad-small]
+  @{
+    tabsContainer: Tabs;
+  }
+  .style { border: 1px solid #BBB; min-width: 50px; text-align: center; }
+  #text:span $options.text
+  select() {
+    this.emit('selected', this);
+  }
+  onClick() {
+    this.select();
+  }
+  init() {
+    this.bind();
+    this.tabsContainer.on('selected', (item: TabHeaderItem) => {
+      this.el.style.borderBottom = item === this ? 'none' : '1px solid #BBB';
+    });
+  }
+
+Tab
+  @{
+    header: TabHeaderItem;
+    view: SyncView<SyncNode>;
+  }
+
+
+AddText({ btnText: 'add' })[row]
+  #input:input[row-fill]
+  #addBtn:button[row-nofill material-icons] $options.btnText
+    onClick() { this.emit('add'); }
+  init() {
+    this.bind();
+  }
