@@ -10,6 +10,7 @@
   "author": "Justin Kalweit",
   "license": "ISC",
   "dependencies": {
-    "syncnode-client": "github:syncnode/syncnode-client"
+    "syncnode-client": "github:syncnode/syncnode-client",
+    "syncnode-svml": "github:syncnode/syncnode-svml"
   }
 }

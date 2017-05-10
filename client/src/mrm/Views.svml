@@ -4,21 +4,147 @@ import { Input, SimpleHeader, Tabs } from '../Components';
 }
 
 
-MainView<Models.Main>
-  .style { max-width: 900px; border: 1px solid #00F; }
+MainView<Models.Main>[pad-small]
+  .style { max-width: 900px; border: 1px solid #CCC; margin: 0 auto; }
   #title:h1[pad-small] 'Managment Review'
+  #title2:h2[pad-small] '9.3.2 Managment Review Inputs'
   #tabs:Tabs
   init() {
     this.tabs.addTab('a', new SectionA());
     this.tabs.addTab('b', new SectionB());
+    this.tabs.addTab('c-1', new SectionC1());
+    this.tabs.addTab('c-2', new SectionC2());
+    this.tabs.addTab('c-3', new SectionC3());
+    this.tabs.addTab('c-4', new SectionC4());
+    this.tabs.addTab('c-5', new SectionC5());
+    this.tabs.addTab('c-6', new SectionC6());
+    this.tabs.addTab('c-7', new SectionC7());
+    this.tabs.addTab('d', new SectionD());
+    this.tabs.addTab('e', new SectionE());
+    this.tabs.addTab('f', new SectionF());
     this.tabs.selectFirstTab();
   }
 
 SectionA[pad-small]
-  #title:h1 'Title Goes Here'
+  #title:h3 'The status of actions from previous management reviews'
 
 SectionB[pad-small]
-  #title:h1 'Title Goes Here'
+  #title:h3 'Changes in external and internal issues that are relevant to the quality management system'
+
+SectionC1[pad-small]
+  #title:h3 'Trends in customer satisfaction and feedback from relevant interested parties'
+  #customerConcerns:CustomerConcernsView
+  init() {
+      console.log('sending request')
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', 'http://server1.imt.local/imtsqlrest/api/qa');
+			//xhr.open('GET', 'http://localhost:60562/api/qa');
+			xhr.onload = function() {
+   				if (xhr.status === 200) {
+					  let results = JSON.parse(JSON.parse(xhr.responseText));
+             console.log('qa results', results)
+					  this.customerConcerns.update(results);
+   				}
+   				else {
+       				alert('Request failed.  Returned status of ' + xhr.status);
+   				}
+			}.bind(this);
+		  xhr.send();
+  }
+
+SectionC2[pad-small]
+  #title:h3 'The extent to which quality objectives have been met'
+
+SectionC3[pad-small]
+  #title:h3 'Process performance and conformity of products and services'
+  #exceptions:ExceptionsView
+  init() {
+      console.log('sending request')
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', 'http://server1.imt.local/imtsqlrest/api/exceptions');
+			xhr.onload = function() {
+   				if (xhr.status === 200) {
+					  let results = JSON.parse(JSON.parse(xhr.responseText));
+					  this.exceptions.update({ exceptions: results });
+   				}
+   				else {
+       				alert('Request failed.  Returned status of ' + xhr.status);
+   				}
+			}.bind(this);
+		  xhr.send();
+  }
+
+SectionC4[pad-small]
+  #title:h3 'Nonconformities and corrective actions'
+
+SectionC5[pad-small]
+  #title:h3 'Monitoring and measurement results'
+
+SectionC6[pad-small]
+  #title:h3 'Audit results'
+
+SectionC7[pad-small]
+  #title:h3 'The performance of external providers'
+
+SectionD[pad-small]
+  #title:h3 'The adequacy of resources'
+
+SectionE[pad-small]
+  #title:h3 'The effectiveness of actions taken to address risks and opportunities (see 6.1)'
+
+SectionF[pad-small]
+  #title:h3 'Opportunities for improvement'
+
+
+CustomerConcernsView
+    #title:h4 'Customer Concerns'
+		  .style { border-bottom: 1px solid #000; }
+    #internal:ExceptionsResponsibility $data.Internal
+    #external:ExceptionsResponsibility $data.External
+    #undetermined:ExceptionsResponsibility $data.Undetermined
+
+
+ExceptionsView
+    #title:h4 'Exceptions'
+		  .style { border-bottom: 1px solid #000; }
+    #internal:ExceptionsResponsibility $data.exceptions.Internal
+    #external:ExceptionsResponsibility $data.exceptions.External
+    #undetermined:ExceptionsResponsibility $data.exceptions.Undetermined
+
+ExceptionsResponsibility
+  #name:h4 $data.Name
+  #s1:span[spancol bold]
+    .style { width: 175px; padding-left: 3em; }
+  #s2:span[spancol bold center] '2017'
+  #s3:span[spancol bold center] '2016'
+  #s4:span[spancol bold center] '2015'
+  #s5:span[spancol bold center] '2014'
+  #s6:span[spancol bold center] '2013'
+  #s7:span[spancol bold center] '2012'
+  #list 'Loading...'
+  render() {
+    this.list.innerHTML = '';
+    SyncUtils.forEach((this.data as any).Categories, (cat) => {
+        let view = new ExceptionsViewCategory();
+        view.update(cat);
+        this.list.appendChild(view.el);
+    });
+  }
+
+ExceptionsViewCategory
+  #s1:span[spancol] $data.Name
+    .style { width: 175px; }
+  #list:span
+  render() {
+      this.list.innerHTML = '';
+      SyncUtils.forEach((this.data as any).Years, (year: any) => {
+        var span = document.createElement('span');
+        span.className = 'spancol center';
+        span.innerHTML = year.Count;
+        this.list.appendChild(span);
+      });
+  }
+
 
 /*
 

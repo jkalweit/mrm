@@ -4,6 +4,26 @@ html, body {
   font-family: arial;
 }
 
+.no-select {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.spancol {
+  display: inline-block;
+  width: 75px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.center {
+  text-align: center;
+}
+
 .pad-small {
   padding: 4px;
 }

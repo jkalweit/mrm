@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,7 +73,7 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const syncnode_common_1 = __webpack_require__(3);
+const syncnode_common_1 = __webpack_require__(4);
 class SyncNodeLocal extends syncnode_common_1.SyncNode {
     constructor(id) {
         let data = JSON.parse(localStorage.getItem(id));
@@ -261,8 +261,6 @@ class SyncView extends syncnode_common_1.SyncNodeEventEmitter {
             Object.keys(props).forEach((prop) => {
                 var valuePath = props[prop];
                 var value = traverse(this, valuePath.split('.'));
-                if (id == 'addBtn')
-                    console.log('binding', id, prop, valuePath, value);
                 if (prop === 'update') {
                     this[id].update(value);
                 }
@@ -545,18 +543,29 @@ exports.SyncAppSimple = SyncAppSimple;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const syncnode_client_1 = __webpack_require__(0);
-const Components_1 = __webpack_require__(4);
+const Components_1 = __webpack_require__(2);
 class MainView extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
         this.title = this.add('h1', { "innerHTML": "Managment Review", "className": "pad-small pad-small" });
+        this.title2 = this.add('h2', { "innerHTML": "9.3.2 Managment Review Inputs", "className": "pad-small pad-small" });
         this.tabs = this.addView(new Components_1.Tabs(), '');
-        this.el.className += ' ';
+        this.el.className += ' pad-small';
         this.el.className += ' MainView_style';
     }
     init() {
         this.tabs.addTab('a', new SectionA());
         this.tabs.addTab('b', new SectionB());
+        this.tabs.addTab('c-1', new SectionC1());
+        this.tabs.addTab('c-2', new SectionC2());
+        this.tabs.addTab('c-3', new SectionC3());
+        this.tabs.addTab('c-4', new SectionC4());
+        this.tabs.addTab('c-5', new SectionC5());
+        this.tabs.addTab('c-6', new SectionC6());
+        this.tabs.addTab('c-7', new SectionC7());
+        this.tabs.addTab('d', new SectionD());
+        this.tabs.addTab('e', new SectionE());
+        this.tabs.addTab('f', new SectionF());
         this.tabs.selectFirstTab();
     }
 }
@@ -564,7 +573,7 @@ exports.MainView = MainView;
 class SectionA extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h1', { "innerHTML": "Title Goes Here", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "The status of actions from previous management reviews", "className": "" });
         this.el.className += ' pad-small';
     }
 }
@@ -572,16 +581,404 @@ exports.SectionA = SectionA;
 class SectionB extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h1', { "innerHTML": "Title Goes Here", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "Changes in external and internal issues that are relevant to the quality management system", "className": "" });
         this.el.className += ' pad-small';
     }
 }
 exports.SectionB = SectionB;
-syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', ` max-width: 900px; border: 1px solid #00F; `);
+class SectionC1 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "Trends in customer satisfaction and feedback from relevant interested parties", "className": "" });
+        this.customerConcerns = this.addView(new CustomerConcernsView(), '');
+        this.el.className += ' pad-small';
+    }
+    init() {
+        console.log('sending request');
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://server1.imt.local/imtsqlrest/api/qa');
+        //xhr.open('GET', 'http://localhost:60562/api/qa');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let results = JSON.parse(JSON.parse(xhr.responseText));
+                console.log('qa results', results);
+                this.customerConcerns.update(results);
+            }
+            else {
+                alert('Request failed.  Returned status of ' + xhr.status);
+            }
+        }.bind(this);
+        xhr.send();
+    }
+}
+exports.SectionC1 = SectionC1;
+class SectionC2 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "The extent to which quality objectives have been met", "className": "" });
+        this.el.className += ' pad-small';
+    }
+}
+exports.SectionC2 = SectionC2;
+class SectionC3 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "Process performance and conformity of products and services", "className": "" });
+        this.exceptions = this.addView(new ExceptionsView(), '');
+        this.el.className += ' pad-small';
+    }
+    init() {
+        console.log('sending request');
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://server1.imt.local/imtsqlrest/api/exceptions');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let results = JSON.parse(JSON.parse(xhr.responseText));
+                this.exceptions.update({ exceptions: results });
+            }
+            else {
+                alert('Request failed.  Returned status of ' + xhr.status);
+            }
+        }.bind(this);
+        xhr.send();
+    }
+}
+exports.SectionC3 = SectionC3;
+class SectionC4 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "Nonconformities and corrective actions", "className": "" });
+        this.el.className += ' pad-small';
+    }
+}
+exports.SectionC4 = SectionC4;
+class SectionC5 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "Monitoring and measurement results", "className": "" });
+        this.el.className += ' pad-small';
+    }
+}
+exports.SectionC5 = SectionC5;
+class SectionC6 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "Audit results", "className": "" });
+        this.el.className += ' pad-small';
+    }
+}
+exports.SectionC6 = SectionC6;
+class SectionC7 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "The performance of external providers", "className": "" });
+        this.el.className += ' pad-small';
+    }
+}
+exports.SectionC7 = SectionC7;
+class SectionD extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "The adequacy of resources", "className": "" });
+        this.el.className += ' pad-small';
+    }
+}
+exports.SectionD = SectionD;
+class SectionE extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "The effectiveness of actions taken to address risks and opportunities (see 6.1)", "className": "" });
+        this.el.className += ' pad-small';
+    }
+}
+exports.SectionE = SectionE;
+class SectionF extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "Opportunities for improvement", "className": "" });
+        this.el.className += ' pad-small';
+    }
+}
+exports.SectionF = SectionF;
+class CustomerConcernsView extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h4', { "innerHTML": "Customer Concerns", "className": " h4_title_style" });
+        this.internal = this.addView(new ExceptionsResponsibility(), '');
+        this.external = this.addView(new ExceptionsResponsibility(), '');
+        this.undetermined = this.addView(new ExceptionsResponsibility(), '');
+        this.el.className += ' ';
+        this.addBinding('internal', 'update', 'data.Internal');
+        this.addBinding('external', 'update', 'data.External');
+        this.addBinding('undetermined', 'update', 'data.Undetermined');
+    }
+}
+exports.CustomerConcernsView = CustomerConcernsView;
+syncnode_client_1.SyncView.addGlobalStyle('.h4_title_style', ` border-bottom: 1px solid #000; `);
+class ExceptionsView extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h4', { "innerHTML": "Exceptions", "className": " h4_title_style" });
+        this.internal = this.addView(new ExceptionsResponsibility(), '');
+        this.external = this.addView(new ExceptionsResponsibility(), '');
+        this.undetermined = this.addView(new ExceptionsResponsibility(), '');
+        this.el.className += ' ';
+        this.addBinding('internal', 'update', 'data.exceptions.Internal');
+        this.addBinding('external', 'update', 'data.exceptions.External');
+        this.addBinding('undetermined', 'update', 'data.exceptions.Undetermined');
+    }
+}
+exports.ExceptionsView = ExceptionsView;
+syncnode_client_1.SyncView.addGlobalStyle('.h4_title_style', ` border-bottom: 1px solid #000; `);
+class ExceptionsResponsibility extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.name = this.add('h4', { "innerHTML": "", "className": "" });
+        this.s1 = this.add('span', { "innerHTML": "", "className": "spancol bold span_s1_style spancol bold" });
+        this.s2 = this.add('span', { "innerHTML": "2017", "className": "spancol bold center spancol bold center" });
+        this.s3 = this.add('span', { "innerHTML": "2016", "className": "spancol bold center spancol bold center" });
+        this.s4 = this.add('span', { "innerHTML": "2015", "className": "spancol bold center spancol bold center" });
+        this.s5 = this.add('span', { "innerHTML": "2014", "className": "spancol bold center spancol bold center" });
+        this.s6 = this.add('span', { "innerHTML": "2013", "className": "spancol bold center spancol bold center" });
+        this.s7 = this.add('span', { "innerHTML": "2012", "className": "spancol bold center spancol bold center" });
+        this.list = this.add('div', { "innerHTML": "Loading...", "className": "" });
+        this.el.className += ' ';
+        this.addBinding('name', 'innerHTML', 'data.Name');
+    }
+    render() {
+        this.list.innerHTML = '';
+        syncnode_client_1.SyncUtils.forEach(this.data.Categories, (cat) => {
+            let view = new ExceptionsViewCategory();
+            view.update(cat);
+            this.list.appendChild(view.el);
+        });
+    }
+}
+exports.ExceptionsResponsibility = ExceptionsResponsibility;
+syncnode_client_1.SyncView.addGlobalStyle('.span_s1_style', ` width: 175px; padding-left: 3em; `);
+class ExceptionsViewCategory extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.s1 = this.add('span', { "innerHTML": "", "className": "spancol span_s1_style spancol" });
+        this.list = this.add('span', { "innerHTML": "", "className": "" });
+        this.el.className += ' ';
+        this.addBinding('s1', 'innerHTML', 'data.Name');
+    }
+    render() {
+        this.list.innerHTML = '';
+        syncnode_client_1.SyncUtils.forEach(this.data.Years, (year) => {
+            var span = document.createElement('span');
+            span.className = 'spancol center';
+            span.innerHTML = year.Count;
+            this.list.appendChild(span);
+        });
+    }
+}
+exports.ExceptionsViewCategory = ExceptionsViewCategory;
+syncnode_client_1.SyncView.addGlobalStyle('.span_s1_style', ` width: 175px; `);
+syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', ` max-width: 900px; border: 1px solid #CCC; margin: 0 auto; `);
 
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const syncnode_client_1 = __webpack_require__(0);
+class Input extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px' }, options));
+        this.label = this.add('span', { "innerHTML": "", "className": "" });
+        this.input = this.add('input', { "innerHTML": "", "className": " input_input_style" });
+        this.el.className += ' ';
+        this.el.className += ' Input_style';
+        this.el.addEventListener('change', this.onChange.bind(this));
+    }
+    onChange() {
+        let val = this.input.value;
+        if (this.options.twoway && this.options.key) {
+            this.data.set(this.options.key, val);
+        }
+        this.emit('change', val);
+    }
+    value() {
+        return this.input.value;
+    }
+    init() {
+        this.label.style.width = this.options.labelWidth;
+    }
+    render() {
+        if (this.options.label) {
+            this.label.innerHTML = this.options.label;
+        }
+        this.label.style.display = this.options.label ? 'flex' : 'none';
+        if (this.data) {
+            this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+        }
+    }
+}
+exports.Input = Input;
+syncnode_client_1.SyncView.addGlobalStyle('.input_input_style', `
+            flex: 1;
+            font-size: 1em;
+            padding: 0.5em 0;
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(0,0,0,0.5);
+    `);
+class Modal extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({ hideOnClick: true }, options));
+        this.viewContainer = this.add('div', { "innerHTML": "", "className": "" });
+        this.el.className += ' ';
+        this.el.className += ' Modal_style';
+        this.el.addEventListener('click', this.onClick.bind(this));
+        this.viewContainer.addEventListener('click', (e) => { e.stopPropagation(); });
+    }
+    onClick() { if (this.options.hideOnClick) {
+        this.hide();
+    } }
+    init() {
+        this.hide();
+        if (this.options.view) {
+            this.view = new this.options.view();
+            var _me = this;
+            let handler = function (eventName) {
+                if (eventName === 'hide') {
+                    _me.hide();
+                }
+                _me.emit.apply(_me, arguments);
+            };
+            this.view.onAny(handler.bind(this));
+            this.viewContainer.appendChild(this.view.el);
+        }
+    }
+    render() {
+        if (this.view)
+            this.view.update(this.data);
+    }
+}
+exports.Modal = Modal;
+class SimpleHeader extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('span', { "innerHTML": "", "className": "row-fill span_title_style row-fill" });
+        this.addBtn = this.add('button', { "innerHTML": "Add", "className": "row-nofill row-nofill" });
+        this.el.className += ' row';
+        this.addBtn.addEventListener('click', () => { this.emit('add'); });
+    }
+    showButtons(val) {
+        this.addBtn.style.display = val ? 'flex' : 'none';
+    }
+    init() {
+        this.title.innerHTML = this.options.title;
+    }
+}
+exports.SimpleHeader = SimpleHeader;
+syncnode_client_1.SyncView.addGlobalStyle('.span_title_style', ` 
+            font-weight: bold; 
+            font-size: 1.5em;
+        `);
+class Tabs extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.tabsArr = [];
+        this.headers = this.add('div', { "innerHTML": "", "className": "row div_headers_style row" });
+        this.tabs = this.add('div', { "innerHTML": "", "className": "" });
+        this.el.className += ' ';
+    }
+    addTab(title, view) {
+        let tab = new Tab();
+        tab.header = new TabHeaderItem({ text: title });
+        tab.header.tabsContainer = this;
+        tab.header.init();
+        tab.view = view;
+        tab.view.init();
+        tab.init();
+        tab.header.on('selected', () => {
+            this.selectedItem = tab.header;
+            this.emit('selected', this.selectedItem);
+            this.tabs.innerHTML = '';
+            this.tabs.appendChild(tab.view.el);
+        });
+        this.headers.appendChild(tab.header.el);
+        this.tabsArr.push(tab);
+    }
+    selectFirstTab() {
+        if (this.tabsArr.length) {
+            this.tabsArr[0].header.select();
+        }
+    }
+}
+exports.Tabs = Tabs;
+syncnode_client_1.SyncView.addGlobalStyle('.div_headers_style', ` border-bottom: 1px solid #CCC; `);
+class TabHeaderItem extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.text = this.add('span', { "innerHTML": "", "className": "" });
+        this.el.className += ' row-nofill pad-small no-select';
+        this.el.className += ' TabHeaderItem_style';
+        this.el.addEventListener('click', this.onClick.bind(this));
+        this.addBinding('text', 'innerHTML', 'options.text');
+    }
+    select() {
+        this.emit('selected', this);
+    }
+    onClick() {
+        this.select();
+    }
+    init() {
+        this.bind();
+        this.tabsContainer.on('selected', (item) => {
+            let selected = item === this;
+            this.el.style.border = selected ? '1px solid #666' : '1px solid #BBB';
+            this.el.style.borderBottom = selected ? 'none' : '1px solid #BBB';
+            this.el.style.backgroundColor = selected ? '#FFF' : '#CCC';
+        });
+    }
+}
+exports.TabHeaderItem = TabHeaderItem;
+class Tab extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.el.className += ' ';
+    }
+}
+exports.Tab = Tab;
+class AddText extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({ btnText: 'add' }, options));
+        this.input = this.add('input', { "innerHTML": "", "className": "row-fill row-fill" });
+        this.addBtn = this.add('button', { "innerHTML": "", "className": "row-nofill material-icons row-nofill material-icons" });
+        this.el.className += ' row';
+        this.addBtn.addEventListener('click', () => { this.emit('add'); });
+        this.addBinding('addBtn', 'innerHTML', 'options.btnText');
+    }
+    init() {
+        this.bind();
+    }
+}
+exports.AddText = AddText;
+syncnode_client_1.SyncView.addGlobalStyle('.Input_style', ` 
+        width: 100%;
+        display: flex; 
+    `);
+syncnode_client_1.SyncView.addGlobalStyle('.Modal_style', ` 
+        position: fixed;
+        left: 0; right: 0; top: 0; bottom: 0;
+        background-color: rgba(0,0,0,0.7);
+        overflow-y: scroll;
+        display: flex;
+        align-items: center;
+        justify-content: center;	
+    `);
+syncnode_client_1.SyncView.addGlobalStyle('.TabHeaderItem_style', ` border: 1px solid #BBB; min-width: 50px; text-align: center; `);
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -603,7 +1000,7 @@ channel.on('updated', () => {
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -973,201 +1370,6 @@ class SyncNodeChannel extends SyncNodeEventEmitter {
     }
 }
 exports.SyncNodeChannel = SyncNodeChannel;
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const syncnode_client_1 = __webpack_require__(0);
-class Input extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px' }, options));
-        this.label = this.add('span', { "innerHTML": "", "className": "" });
-        this.input = this.add('input', { "innerHTML": "", "className": " input_input_style" });
-        this.el.className += ' ';
-        this.el.className += ' Input_style';
-        this.el.addEventListener('change', this.onChange.bind(this));
-    }
-    onChange() {
-        let val = this.input.value;
-        if (this.options.twoway && this.options.key) {
-            this.data.set(this.options.key, val);
-        }
-        this.emit('change', val);
-    }
-    value() {
-        return this.input.value;
-    }
-    init() {
-        this.label.style.width = this.options.labelWidth;
-    }
-    render() {
-        if (this.options.label) {
-            this.label.innerHTML = this.options.label;
-        }
-        this.label.style.display = this.options.label ? 'flex' : 'none';
-        if (this.data) {
-            this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
-        }
-    }
-}
-exports.Input = Input;
-syncnode_client_1.SyncView.addGlobalStyle('.input_input_style', `
-            flex: 1;
-            font-size: 1em;
-            padding: 0.5em 0;
-            background-color: transparent;
-            border: none;
-            border-bottom: 1px solid rgba(0,0,0,0.5);
-    `);
-class Modal extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({ hideOnClick: true }, options));
-        this.viewContainer = this.add('div', { "innerHTML": "", "className": "" });
-        this.el.className += ' ';
-        this.el.className += ' Modal_style';
-        this.el.addEventListener('click', this.onClick.bind(this));
-        this.viewContainer.addEventListener('click', (e) => { e.stopPropagation(); });
-    }
-    onClick() { if (this.options.hideOnClick) {
-        this.hide();
-    } }
-    init() {
-        this.hide();
-        if (this.options.view) {
-            this.view = new this.options.view();
-            var _me = this;
-            let handler = function (eventName) {
-                if (eventName === 'hide') {
-                    _me.hide();
-                }
-                _me.emit.apply(_me, arguments);
-            };
-            this.view.onAny(handler.bind(this));
-            this.viewContainer.appendChild(this.view.el);
-        }
-    }
-    render() {
-        if (this.view)
-            this.view.update(this.data);
-    }
-}
-exports.Modal = Modal;
-class SimpleHeader extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('span', { "innerHTML": "", "className": "row-fill span_title_style row-fill" });
-        this.addBtn = this.add('button', { "innerHTML": "Add", "className": "row-nofill row-nofill" });
-        this.el.className += ' row';
-        this.addBtn.addEventListener('click', () => { this.emit('add'); });
-    }
-    showButtons(val) {
-        this.addBtn.style.display = val ? 'flex' : 'none';
-    }
-    init() {
-        this.title.innerHTML = this.options.title;
-    }
-}
-exports.SimpleHeader = SimpleHeader;
-syncnode_client_1.SyncView.addGlobalStyle('.span_title_style', ` 
-            font-weight: bold; 
-            font-size: 1.5em;
-        `);
-class Tabs extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.tabsArr = [];
-        this.headers = this.add('div', { "innerHTML": "", "className": "row div_headers_style row" });
-        this.tabs = this.add('div', { "innerHTML": "", "className": "" });
-        this.el.className += ' ';
-    }
-    addTab(title, view) {
-        let tab = new Tab();
-        tab.header = new TabHeaderItem({ text: title });
-        tab.header.tabsContainer = this;
-        tab.header.init();
-        tab.view = view;
-        tab.view.init();
-        tab.init();
-        tab.header.on('selected', () => {
-            this.selectedItem = tab.header;
-            this.emit('selected', this.selectedItem);
-            this.tabs.innerHTML = '';
-            this.tabs.appendChild(tab.view.el);
-        });
-        this.headers.appendChild(tab.header.el);
-        this.tabsArr.push(tab);
-    }
-    selectFirstTab() {
-        if (this.tabsArr.length) {
-            this.tabsArr[0].header.select();
-        }
-    }
-}
-exports.Tabs = Tabs;
-syncnode_client_1.SyncView.addGlobalStyle('.div_headers_style', ` border-bottom: 1px solid #CCC; `);
-class TabHeaderItem extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.text = this.add('span', { "innerHTML": "", "className": "" });
-        this.el.className += ' row-nofill pad-small';
-        this.el.className += ' TabHeaderItem_style';
-        this.el.addEventListener('click', this.onClick.bind(this));
-        this.addBinding('text', 'innerHTML', 'options.text');
-    }
-    select() {
-        this.emit('selected', this);
-    }
-    onClick() {
-        this.select();
-    }
-    init() {
-        this.bind();
-        this.tabsContainer.on('selected', (item) => {
-            this.el.style.borderBottom = item === this ? 'none' : '1px solid #BBB';
-        });
-    }
-}
-exports.TabHeaderItem = TabHeaderItem;
-class Tab extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.el.className += ' ';
-    }
-}
-exports.Tab = Tab;
-class AddText extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({ btnText: 'add' }, options));
-        this.input = this.add('input', { "innerHTML": "", "className": "row-fill row-fill" });
-        this.addBtn = this.add('button', { "innerHTML": "", "className": "row-nofill material-icons row-nofill material-icons" });
-        this.el.className += ' row';
-        this.addBtn.addEventListener('click', () => { this.emit('add'); });
-        this.addBinding('addBtn', 'innerHTML', 'options.btnText');
-    }
-    init() {
-        this.bind();
-    }
-}
-exports.AddText = AddText;
-syncnode_client_1.SyncView.addGlobalStyle('.Input_style', ` 
-        width: 100%;
-        display: flex; 
-    `);
-syncnode_client_1.SyncView.addGlobalStyle('.Modal_style', ` 
-        position: fixed;
-        left: 0; right: 0; top: 0; bottom: 0;
-        background-color: rgba(0,0,0,0.7);
-        overflow-y: scroll;
-        display: flex;
-        align-items: center;
-        justify-content: center;	
-    `);
-syncnode_client_1.SyncView.addGlobalStyle('.TabHeaderItem_style', ` border: 1px solid #BBB; min-width: 50px; text-align: center; `);
 
 
 /***/ })

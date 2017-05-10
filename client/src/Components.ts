@@ -138,7 +138,7 @@ export class TabHeaderItem extends SyncView<SyncNode> {
  	text = this.add('span', {"innerHTML":"","className":""});
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({}, options));
-		this.el.className += ' row-nofill pad-small';
+		this.el.className += ' row-nofill pad-small no-select';
 		this.el.className += ' TabHeaderItem_style';
 		this.el.addEventListener('click', this.onClick.bind(this));
 		this.addBinding('text', 'innerHTML', 'options.text');
@@ -152,7 +152,10 @@ export class TabHeaderItem extends SyncView<SyncNode> {
 	init() {
     this.bind();
     this.tabsContainer.on('selected', (item: TabHeaderItem) => {
-      this.el.style.borderBottom = item === this ? 'none' : '1px solid #BBB';
+      let selected = item === this;
+      this.el.style.border = selected ? '1px solid #666' : '1px solid #BBB';
+      this.el.style.borderBottom = selected ? 'none' : '1px solid #BBB';
+      this.el.style.backgroundColor = selected ?  '#FFF' : '#CCC';
     });
   }
 }

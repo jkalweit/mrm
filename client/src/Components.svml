@@ -120,7 +120,7 @@ Tabs
     }
   }
 
-TabHeaderItem[row-nofill pad-small]
+TabHeaderItem[row-nofill pad-small no-select]
   @{
     tabsContainer: Tabs;
   }
@@ -135,7 +135,10 @@ TabHeaderItem[row-nofill pad-small]
   init() {
     this.bind();
     this.tabsContainer.on('selected', (item: TabHeaderItem) => {
-      this.el.style.borderBottom = item === this ? 'none' : '1px solid #BBB';
+      let selected = item === this;
+      this.el.style.border = selected ? '1px solid #666' : '1px solid #BBB';
+      this.el.style.borderBottom = selected ? 'none' : '1px solid #BBB';
+      this.el.style.backgroundColor = selected ?  '#FFF' : '#CCC';
     });
   }
 
