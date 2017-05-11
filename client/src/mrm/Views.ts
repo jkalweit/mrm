@@ -6,7 +6,7 @@ import * as Models from './Models';
 import { Input, SimpleHeader, Tabs } from '../Components';
 
 export class MainView extends SyncView<Models.Main> {
-	title = this.add('h1', {"innerHTML":"Managment Review","className":"pad-small pad-small"});
+	title = this.add('h1', {"innerHTML":"Management Review","className":"pad-small pad-small"});
 	title2 = this.add('h2', {"innerHTML":"9.3.2 Managment Review Inputs","className":"pad-small pad-small"});
 	tabs = this.addView(new Tabs(), '');
 	constructor(options: any = {}) {

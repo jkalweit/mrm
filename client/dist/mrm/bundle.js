@@ -261,6 +261,8 @@ class SyncView extends syncnode_common_1.SyncNodeEventEmitter {
             Object.keys(props).forEach((prop) => {
                 var valuePath = props[prop];
                 var value = traverse(this, valuePath.split('.'));
+                if (id == 'addBtn')
+                    console.log('binding', id, prop, valuePath, value);
                 if (prop === 'update') {
                     this[id].update(value);
                 }
@@ -547,7 +549,7 @@ const Components_1 = __webpack_require__(2);
 class MainView extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h1', { "innerHTML": "Managment Review", "className": "pad-small pad-small" });
+        this.title = this.add('h1', { "innerHTML": "Management Review", "className": "pad-small pad-small" });
         this.title2 = this.add('h2', { "innerHTML": "9.3.2 Managment Review Inputs", "className": "pad-small pad-small" });
         this.tabs = this.addView(new Components_1.Tabs(), '');
         this.el.className += ' pad-small';

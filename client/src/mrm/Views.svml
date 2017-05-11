@@ -6,7 +6,7 @@ import { Input, SimpleHeader, Tabs } from '../Components';
 
 MainView<Models.Main>[pad-small]
   .style { max-width: 900px; border: 1px solid #CCC; margin: 0 auto; }
-  #title:h1[pad-small] 'Managment Review'
+  #title:h1[pad-small] 'Management Review'
   #title2:h2[pad-small] '9.3.2 Managment Review Inputs'
   #tabs:Tabs
   init() {

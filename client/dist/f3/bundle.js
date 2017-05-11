@@ -80,7 +80,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_common_1) {
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(4)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_common_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var SyncNodeLocal = (function (_super) {
@@ -215,7 +215,6 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
             if (options === void 0) { options = {}; }
             var _this = _super.call(this) || this;
             _this.options = options;
-            console.log('options', _this.options);
             _this.bindings = {};
             _this.el = document.createElement(_this.options.tag || 'div');
             _this.el.className = options.className || '';
@@ -243,10 +242,18 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
                     el.addEventListener(key, spec.events[key]);
                 });
             }
-            this.el.appendChild(el);
+            if (spec.parent) {
+                var parent_1 = this[spec.parent];
+                if (parent_1.el)
+                    parent_1 = parent_1.el;
+                parent_1.appendChild(el);
+            }
+            else {
+                this.el.appendChild(el);
+            }
             return el;
         };
-        SyncView.prototype.addView = function (view, className, tag) {
+        SyncView.prototype.addView = function (view, className, parent) {
             view.init();
             if (className)
                 view.el.className += ' ' + className;
@@ -597,6 +604,27 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
 !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(0)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_client_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var AdminMode = (function (_super) {
+        __extends(AdminMode, _super);
+        function AdminMode(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
+            _this.enabled = false;
+            _this.el.className += ' ';
+            return _this;
+        }
+        AdminMode.prototype.init = function () {
+            var _this = this;
+            document.addEventListener('keypress', function (e) {
+                if (e.keyCode === 30) {
+                    _this.enabled = !_this.enabled;
+                    _this.emit('changed', _this.enabled);
+                }
+            });
+        };
+        return AdminMode;
+    }(syncnode_client_1.SyncView));
+    exports.AdminMode = AdminMode;
     var AddText = (function (_super) {
         __extends(AddText, _super);
         function AddText(options) {
@@ -620,34 +648,13 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         function MainView(options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
-            _this.title = _this.add('h1', { "innerHTML": "F3 York", "className": "pad-small pad-small" });
-            _this.newThread = _this.addView(new AddText(), '');
-            _this.threads = _this.addView(new Threads(), '');
-            _this.selectedThread = _this.addView(new Thread(), '');
-            _this.el.className += ' ';
+            _this.title = _this.add('div', { "innerHTML": "F3 York2", "className": "header-small header-small" });
+            _this.threads = _this.addView(new Threads(), '', 'undefined');
+            _this.el.className += ' border-light';
             _this.el.className += ' MainView_style';
-            _this.newThread.on('add', function () {
-                _this.data.threads.active.setItem({
-                    createdAt: new Date().toISOString(),
-                    name: _this.newThread.input.value,
-                    messages: {}
-                });
-                _this.newThread.input.value = '';
-            });
-            _this.threads.on('selected', function (thread) {
-                _this.selectedThread.update(thread);
-            });
-            _this.addBinding('threads', 'update', 'data.threads.active');
+            _this.addBinding('threads', 'update', 'data.threads');
             return _this;
         }
-        MainView.prototype.render = function () {
-            if (this.selectedThread.data) {
-                this.selectedThread.update(this.data.threads.active[this.selectedThread.data.key]);
-            }
-            else {
-                this.selectedThread.update(syncnode_client_1.SyncUtils.toArray(this.data.threads.active)[0]);
-            }
-        };
         return MainView;
     }(syncnode_client_1.SyncView));
     exports.MainView = MainView;
@@ -656,15 +663,57 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         function Threads(options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
-            _this.list = _this.addView(new syncnode_client_1.SyncList({ item: ThreadItem }), '');
+            _this.threads = _this.addView(new ThreadsList(), 'row-nofill border-light', 'undefined');
+            _this.selectedThread = _this.addView(new Thread(), 'row-nofill border-light', 'undefined');
+            _this.el.className += ' row';
+            _this.threads.on('selected', function (thread) {
+                _this.selectedThread.update(thread);
+            });
+            _this.addBinding('threads', 'update', 'data.active');
+            return _this;
+        }
+        Threads.prototype.render = function () {
+            if (this.selectedThread.data) {
+                this.selectedThread.update(this.data.active[this.selectedThread.data.key]);
+            }
+            else {
+                this.selectedThread.update(syncnode_client_1.SyncUtils.toArray(this.data.active)[0]);
+            }
+        };
+        return Threads;
+    }(syncnode_client_1.SyncView));
+    exports.Threads = Threads;
+    var ThreadsList = (function (_super) {
+        __extends(ThreadsList, _super);
+        function ThreadsList(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
+            _this.title = _this.add('div', { "innerHTML": "Threads", "className": "header-small header-small" });
+            _this.adminMode = _this.addView(new AdminMode(), '', 'undefined');
+            _this.newThread = _this.addView(new AddText(), ' AddText_newThread_style', 'undefined');
+            _this.list = _this.addView(new syncnode_client_1.SyncList({ item: ThreadItem }), '', 'undefined');
             _this.el.className += ' ';
+            _this.el.className += ' ThreadsList_style';
+            _this.adminMode.on('changed', function (enabled) {
+                _this.newThread.el.style.display = enabled ? 'flex' : 'none';
+            });
+            _this.newThread.on('add', function () {
+                var thread = _this.data.setItem({
+                    createdAt: new Date().toISOString(),
+                    name: _this.newThread.input.value,
+                    messages: {}
+                });
+                _this.emit('selected', thread);
+                _this.newThread.input.value = '';
+            });
             _this.list.on('selected', function (v, thread) { _this.emit('selected', thread); });
             _this.addBinding('list', 'update', 'data');
             return _this;
         }
-        return Threads;
+        return ThreadsList;
     }(syncnode_client_1.SyncView));
-    exports.Threads = Threads;
+    exports.ThreadsList = ThreadsList;
+    syncnode_client_1.SyncView.addGlobalStyle('.AddText_newThread_style', " display: none; ");
     var ThreadItem = (function (_super) {
         __extends(ThreadItem, _super);
         function ThreadItem(options) {
@@ -686,17 +735,26 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         function Thread(options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
-            _this.header = _this.addView(new ThreadHeader(), '');
-            _this.list = _this.addView(new syncnode_client_1.SyncList({ item: ThreadMessage }), '');
-            _this.newMsg = _this.addView(new AddText(), '');
+            _this.header = _this.add('div', { "innerHTML": "", "className": "row header-small row header-small" });
+            _this.name = _this.add('div', { "parent": "header", "innerHTML": "", "className": "row-fill row-fill" });
+            _this.del = _this.add('button', { "parent": "header", "innerHTML": "delete", "className": "row-nofill material-icons button_del_style row-nofill material-icons" });
+            _this.list = _this.addView(new syncnode_client_1.SyncList({ item: ThreadMessage }), '', 'undefined');
+            _this.newMsg = _this.addView(new AddText(), '', 'undefined');
+            _this.adminMode = _this.addView(new AdminMode(), '', 'undefined');
             _this.el.className += ' ';
-            _this.addBinding('header', 'update', 'data');
+            _this.el.className += ' Thread_style';
+            _this.addBinding('name', 'innerHTML', 'data.name');
+            _this.del.addEventListener('click', function () { _this.data.parent.remove(_this.data.key); });
             _this.addBinding('list', 'update', 'data.messages');
             _this.newMsg.on('add', function () {
                 _this.data.messages.setItem({
                     text: _this.newMsg.input.value
                 });
                 _this.newMsg.input.value = '';
+            });
+            _this.adminMode.on('changed', function (enabled) {
+                console.log('here3', enabled, _this.del);
+                _this.del.style.display = enabled ? 'flex' : 'none';
             });
             return _this;
         }
@@ -706,22 +764,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         return Thread;
     }(syncnode_client_1.SyncView));
     exports.Thread = Thread;
-    var ThreadHeader = (function (_super) {
-        __extends(ThreadHeader, _super);
-        function ThreadHeader(options) {
-            if (options === void 0) { options = {}; }
-            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
-            _this.name = _this.add('h2', { "innerHTML": "", "className": "pad-small row-fill h2_name_style pad-small row-fill" });
-            _this.del = _this.add('button', { "innerHTML": "delete", "className": "row-nofill material-icons row-nofill material-icons" });
-            _this.el.className += ' row';
-            _this.addBinding('name', 'innerHTML', 'data.name');
-            _this.del.addEventListener('click', function () { _this.data.parent.remove(_this.data.key); });
-            return _this;
-        }
-        return ThreadHeader;
-    }(syncnode_client_1.SyncView));
-    exports.ThreadHeader = ThreadHeader;
-    syncnode_client_1.SyncView.addGlobalStyle('.h2_name_style', " margin: 4px 0; ");
+    syncnode_client_1.SyncView.addGlobalStyle('.button_del_style', " display: none; ");
     var ThreadMessage = (function (_super) {
         __extends(ThreadMessage, _super);
         function ThreadMessage(options) {
@@ -736,8 +779,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         return ThreadMessage;
     }(syncnode_client_1.SyncView));
     exports.ThreadMessage = ThreadMessage;
-    syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', " max-width: 300px; border: 1px solid #00F; ");
+    syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', " height: 400px; ");
+    syncnode_client_1.SyncView.addGlobalStyle('.ThreadsList_style', " min-width: 200px; ");
     syncnode_client_1.SyncView.addGlobalStyle('.ThreadItem_style', " border-bottom: 1px solid #CCC; ");
+    syncnode_client_1.SyncView.addGlobalStyle('.Thread_style', " min-width: 300px; ");
     syncnode_client_1.SyncView.addGlobalStyle('.ThreadMessage_style', " border-bottom: 1px solid #CCC; ");
 }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -765,7 +810,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 3 */
+/* 3 */,
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = (this && this.__extends) || (function () {

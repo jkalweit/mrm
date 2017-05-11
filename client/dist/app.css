@@ -16,6 +16,17 @@ html, body {
   width: 75px;
 }
 
+.header-small {
+  padding: 4px;
+  background-color: #DDF;
+  font-size: 18px;
+  font-weight: bold; 
+}
+
+.border-light {
+  border: 1px solid #CCC;
+}
+
 .bold {
   font-weight: bold;
 }

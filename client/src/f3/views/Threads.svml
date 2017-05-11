@@ -3,6 +3,19 @@ import * as Models from '../models/Threads';
 import { Input, SimpleHeader } from '../../Components';
 }
 
+AdminMode
+  @{
+    enabled: boolean = false;
+  }
+  init() {
+    document.addEventListener('keypress', e => {
+			if(e.keyCode === 30) { // 30 = ctrl+^ && 94 = '^'
+				this.enabled = !this.enabled;
+				this.emit('changed', this.enabled); 
+			}
+		});
+  }
+
 AddText({ btnText: 'add' })[row]
   #input:input[row-fill]
   #addBtn:button[row-nofill material-icons] $options.btnText
@@ -11,32 +24,43 @@ AddText({ btnText: 'add' })[row]
     this.bind();
   }
 
-MainView<Models.Main>
-  .style { max-width: 300px; border: 1px solid #00F; }
-  #title:h1[pad-small] 'F3 York'
+MainView<Models.Main>[border-light]
+  .style { height: 400px; }
+  #title[header-small] 'F3 York2'
+  #threads:Threads $data.threads
+
+Threads<Models.Threads>[row]
+  #threads:ThreadsList[row-nofill border-light] $data.active
+    onSelected(thread: Models.Thread) {
+      this.selectedThread.update(thread);
+    }
+  #selectedThread:Thread[row-nofill border-light]
+  render() {
+    if(this.selectedThread.data) {
+      this.selectedThread.update((this.data.active as any)[this.selectedThread.data.key]);
+    } else {
+      this.selectedThread.update(SyncUtils.toArray(this.data.active)[0]);
+    }
+  }
+  
+ThreadsList<Models.Threads>
+  .style { min-width: 200px; }
+  #title:div[header-small] 'Threads'
+  #adminMode:AdminMode
+    onChanged(enabled: boolean) {
+      this.newThread.el.style.display = enabled ? 'flex' : 'none';
+    }
   #newThread:AddText
+    .style { display: none; }
     onAdd() {
-      this.data.threads.active.setItem({
+      let thread = this.data.setItem({
         createdAt: new Date().toISOString(),
         name: this.newThread.input.value,
         messages: {}
       });
+      this.emit('selected', thread);
       this.newThread.input.value = '';
     }
-  #threads:Threads $data.threads.active
-    onSelected(thread: Models.Thread) {
-      this.selectedThread.update(thread);
-    }
-  #selectedThread:Thread
-  render() {
-    if(this.selectedThread.data) {
-      this.selectedThread.update((this.data.threads.active as any)[this.selectedThread.data.key]);
-    } else {
-      this.selectedThread.update(SyncUtils.toArray(this.data.threads.active)[0]);
-    }
-  }
-  
-Threads<Models.Threads>
   #list:SyncList({ item: ThreadItem }) $data
     onSelected(v, thread) { this.emit('selected', thread); }
 
@@ -45,12 +69,13 @@ ThreadItem<Models.Thread>[pad-small]
   #text $data.name
   onClick() { this.emit('selected', this.data); }
 
-
-
-
-
 Thread<Models.Thread>
-  #header:ThreadHeader $data
+  .style { min-width: 300px; }
+  #header[row header-small]
+    #name[row-fill] $data.name
+    #del:button[row-nofill material-icons] 'delete'
+      .style { display: none; }
+      onClick() { this.data.parent.remove(this.data.key); }
   #list:SyncList({ item: ThreadMessage }) $data.messages
   #newMsg:AddText()
     onAdd() {
@@ -59,15 +84,14 @@ Thread<Models.Thread>
       });
       this.newMsg.input.value = '';
     }
+  #adminMode:AdminMode
+    onChanged(enabled: boolean) {
+      console.log('here3', enabled, this.del)
+      this.del.style.display = enabled ? 'flex' : 'none';
+    }
   render() {
     this.el.style.display = this.data ? 'block' : 'none';
   }
-
-ThreadHeader<Models.Thread>[row]
-  #name:h2[pad-small row-fill] $data.name
-    .style { margin: 4px 0; }
-  #del:button[row-nofill material-icons] 'delete'
-    onClick() { this.data.parent.remove(this.data.key); }
 
 ThreadMessage<Models.ThreadMessage>[pad-small]
   .style { border-bottom: 1px solid #CCC; }
