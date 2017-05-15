@@ -69,6 +69,7 @@ ThreadItem<Models.Thread>[pad-small]
   #text $data.name
   onClick() { this.emit('selected', this.data); }
 
+
 Thread<Models.Thread>
   .style { min-width: 300px; }
   #header[row header-small]
