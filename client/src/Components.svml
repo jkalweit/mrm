@@ -24,6 +24,9 @@ Input({ twoway: true, labelWidth: '100px' })
     value() {
         return this.input.value;
     }
+    clear() {
+        this.input.value = '';
+    }
     init() {
         this.label.style.width = this.options.labelWidth;
     }
@@ -59,18 +62,16 @@ Modal({ hideOnClick: true })
         this.hide();
         if(this.options.view) {
             this.view = new this.options.view();
-            var _me = this;
-            let handler = function(eventName: string) {
-                if(eventName === 'hide') { _me.hide(); }
-                _me.emit.apply(_me, arguments);
-            };
-            this.view.onAny(handler.bind(this));
+            this.view.on('hide', () => {
+                this.hide();
+                this.emit('hide');
+            });
             this.viewContainer.appendChild(this.view.el);
         }
     }
     render() {
         if(this.view) this.view.update(this.data);
-    }        
+    } 
 
 SimpleHeader[row]
     #title:span[row-fill]
@@ -152,7 +153,22 @@ Tab
 AddText({ btnText: 'add' })[row]
   #input:input[row-fill]
   #addBtn:button[row-nofill material-icons] $options.btnText
-    onClick() { this.emit('add'); }
+    onClick() { this.emit('add', this.input.value); }
+  clear() { this.input.value = ''; }
   init() {
     this.bind();
   }
+
+AdminMode
+  @{
+    enabled: boolean = false;
+  }
+  init() {
+    document.addEventListener('keypress', e => {
+			if(e.keyCode === 30) { // 30 = ctrl+^ && 94 = '^'
+				this.enabled = !this.enabled;
+				this.emit('changed', this.enabled); 
+			}
+		});
+  }
+

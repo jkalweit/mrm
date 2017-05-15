@@ -4,6 +4,21 @@ html, body {
   font-family: arial;
 }
 
+.hidden {
+  height: 0;
+  overflow: hidden;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.center-vert {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .no-select {
   user-select: none;
   -moz-user-select: none;
@@ -62,3 +77,10 @@ html, body {
 
 .col-nofill {
   flex: 0 0 auto; }
+
+.modal-inner {
+    margin: 1em auto;
+    padding: 1em;
+    max-width: 900px;
+    background-color: #FFF;
+}

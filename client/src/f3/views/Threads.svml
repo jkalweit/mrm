@@ -1,20 +1,8 @@
 {
 import * as Models from '../models/Threads';
-import { Input, SimpleHeader } from '../../Components';
+import { AdminMode, Input, SimpleHeader } from '../../Components';
 }
 
-AdminMode
-  @{
-    enabled: boolean = false;
-  }
-  init() {
-    document.addEventListener('keypress', e => {
-			if(e.keyCode === 30) { // 30 = ctrl+^ && 94 = '^'
-				this.enabled = !this.enabled;
-				this.emit('changed', this.enabled); 
-			}
-		});
-  }
 
 AddText({ btnText: 'add' })[row]
   #input:input[row-fill]

@@ -20,6 +20,9 @@ export class Input extends SyncView<SyncNode> {
 	value() {
         return this.input.value;
     }
+	clear() {
+        this.input.value = '';
+    }
 	init() {
         this.label.style.width = this.options.labelWidth;
     }
@@ -59,12 +62,10 @@ export class Modal extends SyncView<SyncNode> {
         this.hide();
         if(this.options.view) {
             this.view = new this.options.view();
-            var _me = this;
-            let handler = function(eventName: string) {
-                if(eventName === 'hide') { _me.hide(); }
-                _me.emit.apply(_me, arguments);
-            };
-            this.view.onAny(handler.bind(this));
+            this.view.on('hide', () => {
+                this.hide();
+                this.emit('hide');
+            });
             this.viewContainer.appendChild(this.view.el);
         }
     }
@@ -177,11 +178,30 @@ export class AddText extends SyncView<SyncNode> {
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({ btnText: 'add' }, options));
 		this.el.className += ' row';
-		this.addBtn.addEventListener('click', () => {  this.emit('add');  });
+		this.addBtn.addEventListener('click', () => {  this.emit('add', this.input.value);  });
 		this.addBinding('addBtn', 'innerHTML', 'options.btnText');
 	}
+	clear() { this.input.value = ''; }
 	init() {
     this.bind();
+  }
+}
+
+export class AdminMode extends SyncView<SyncNode> {
+
+    enabled: boolean = false;
+  
+ 	constructor(options: any = {}) {
+		super(SyncUtils.mergeMap({}, options));
+		this.el.className += ' ';
+	}
+	init() {
+    document.addEventListener('keypress', e => {
+			if(e.keyCode === 30) { // 30 = ctrl+^ && 94 = '^'
+				this.enabled = !this.enabled;
+				this.emit('changed', this.enabled); 
+			}
+		});
   }
 }
 

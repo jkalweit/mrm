@@ -3,25 +3,7 @@ import { SyncView, SyncList, SyncUtils } from "syncnode-client";
 
 
 import * as Models from '../models/Threads';
-import { Input, SimpleHeader } from '../../Components';
-
-export class AdminMode extends SyncView<SyncNode> {
-
-    enabled: boolean = false;
-  
- 	constructor(options: any = {}) {
-		super(SyncUtils.mergeMap({}, options));
-		this.el.className += ' ';
-	}
-	init() {
-    document.addEventListener('keypress', e => {
-			if(e.keyCode === 30) { // 30 = ctrl+^ && 94 = '^'
-				this.enabled = !this.enabled;
-				this.emit('changed', this.enabled); 
-			}
-		});
-  }
-}
+import { AdminMode, Input, SimpleHeader } from '../../Components';
 
 export class AddText extends SyncView<SyncNode> {
 	input = this.add('input', {"innerHTML":"","className":"row-fill row-fill"});
@@ -39,7 +21,7 @@ export class AddText extends SyncView<SyncNode> {
 
 export class MainView extends SyncView<Models.Main> {
 	title = this.add('div', {"innerHTML":"F3 York2","className":"header-small header-small"});
-	threads = this.addView(new Threads(), '', 'undefined');
+	threads = this.addView(new Threads(), '', undefined);
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({}, options));
 		this.el.className += ' border-light';
@@ -49,8 +31,8 @@ export class MainView extends SyncView<Models.Main> {
 }
 
 export class Threads extends SyncView<Models.Threads> {
-	threads = this.addView(new ThreadsList(), 'row-nofill border-light', 'undefined');
-	selectedThread = this.addView(new Thread(), 'row-nofill border-light', 'undefined');
+	threads = this.addView(new ThreadsList(), 'row-nofill border-light', undefined);
+	selectedThread = this.addView(new Thread(), 'row-nofill border-light', undefined);
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({}, options));
 		this.el.className += ' row';
@@ -70,9 +52,9 @@ export class Threads extends SyncView<Models.Threads> {
 
 export class ThreadsList extends SyncView<Models.Threads> {
 	title = this.add('div', {"innerHTML":"Threads","className":"header-small header-small"});
-	adminMode = this.addView(new AdminMode(), '', 'undefined');
-	newThread = this.addView(new AddText(), ' AddText_newThread_style', 'undefined');
-	list = this.addView(new SyncList({ item: ThreadItem }), '', 'undefined');
+	adminMode = this.addView(new AdminMode(), '', undefined);
+	newThread = this.addView(new AddText(), ' AddText_newThread_style', undefined);
+	list = this.addView(new SyncList({ item: ThreadItem }), '', undefined);
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({}, options));
 		this.el.className += ' ';
@@ -111,9 +93,9 @@ export class Thread extends SyncView<Models.Thread> {
 	header = this.add('div', {"innerHTML":"","className":"row header-small row header-small"});
 	name = this.add('div', {"parent":"header","innerHTML":"","className":"row-fill row-fill"});
 	del = this.add('button', {"parent":"header","innerHTML":"delete","className":"row-nofill material-icons button_del_style row-nofill material-icons"});
-	list = this.addView(new SyncList({ item: ThreadMessage }), '', 'undefined');
-	newMsg = this.addView(new AddText(), '', 'undefined');
-	adminMode = this.addView(new AdminMode(), '', 'undefined');
+	list = this.addView(new SyncList({ item: ThreadMessage }), '', undefined);
+	newMsg = this.addView(new AddText(), '', undefined);
+	adminMode = this.addView(new AdminMode(), '', undefined);
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({}, options));
 		this.el.className += ' ';
