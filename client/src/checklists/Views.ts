@@ -179,5 +179,5 @@ export class Item extends SyncView<Models.Item> {
 
 SyncView.addGlobalStyle('.EditItem_style', ` padding: 8px; border: 1px solid #777; `);
 SyncView.addGlobalStyle('.MainView_style', ` max-width: 900px; margin: 1em auto; `);
-SyncView.addGlobalStyle('.Checklist_style', ` max-width: 600px; `);
+SyncView.addGlobalStyle('.Checklist_style', ` max-width: 400px; `);
 SyncView.addGlobalStyle('.Item_style', ` padding: 8px; border: 1px solid #777; `);

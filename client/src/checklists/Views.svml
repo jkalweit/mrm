@@ -92,7 +92,7 @@ MainView<Models.Main>[pad-small]
   #checklists:SyncList({ item: Checklist }) $data.checklists
   
 Checklist<Models.List>
-  .style { max-width: 600px; }
+  .style { max-width: 400px; }
   #editModal:Modal({ view: EditChecklist }) $data
   #header[row]
     #name[row-fill bold center-vert header-small] $data.name

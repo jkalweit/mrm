@@ -730,7 +730,7 @@ class Item extends syncnode_client_1.SyncView {
 exports.Item = Item;
 syncnode_client_1.SyncView.addGlobalStyle('.EditItem_style', ` padding: 8px; border: 1px solid #777; `);
 syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', ` max-width: 900px; margin: 1em auto; `);
-syncnode_client_1.SyncView.addGlobalStyle('.Checklist_style', ` max-width: 600px; `);
+syncnode_client_1.SyncView.addGlobalStyle('.Checklist_style', ` max-width: 400px; `);
 syncnode_client_1.SyncView.addGlobalStyle('.Item_style', ` padding: 8px; border: 1px solid #777; `);
 
 
