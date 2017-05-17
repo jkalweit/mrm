@@ -664,19 +664,40 @@ exports.EditItem = EditItem;
 class MainView extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.checklists = this.addView(new Checklists(), 'row-nofill Checklists_checklists_style', undefined);
+        this.checklist = this.addView(new Checklist(), 'row-fill Checklist_checklist_style', undefined);
+        this.el.className += ' row pad-small';
+        this.el.className += ' MainView_style';
+        this.checklists.on('selected', (list) => {
+            console.log('list', list);
+            this.selectedChecklist = list;
+            this.bind();
+        });
+        this.addBinding('checklists', 'update', 'data');
+        this.addBinding('checklist', 'update', 'selectedChecklist');
+    }
+}
+exports.MainView = MainView;
+syncnode_client_1.SyncView.addGlobalStyle('.Checklists_checklists_style', ` width: 250px; `);
+syncnode_client_1.SyncView.addGlobalStyle('.Checklist_checklist_style', ` margin-left: 1em; `);
+class Checklists extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
         this.addModal = this.addView(new Components_1.Modal({ view: NewChecklist }), '', undefined);
         this.header = this.add('div', { "innerHTML": "", "className": "row div_header_style row" });
         this.title = this.add('div', { "parent": "header", "innerHTML": "Checklists", "className": "row-fill bold row-fill bold" });
         this.showModal = this.add('button', { "parent": "header", "innerHTML": "New Checklist", "className": "row-nofill row-nofill" });
-        this.checklists = this.addView(new syncnode_client_1.SyncList({ item: Checklist }), '', undefined);
-        this.el.className += ' pad-small';
-        this.el.className += ' MainView_style';
+        this.checklists = this.addView(new syncnode_client_1.SyncList({ item: ChecklistListItem }), '', undefined);
+        this.el.className += ' ';
         this.addBinding('addModal', 'update', 'data.checklists');
         this.showModal.addEventListener('click', () => { this.addModal.show(); });
+        this.checklists.on('selected', (view, list) => {
+            this.emit('selected', list);
+        });
         this.addBinding('checklists', 'update', 'data.checklists');
     }
 }
-exports.MainView = MainView;
+exports.Checklists = Checklists;
 syncnode_client_1.SyncView.addGlobalStyle('.div_header_style', ` margin-bottom: 1em; `);
 class Checklist extends syncnode_client_1.SyncView {
     constructor(options = {}) {
@@ -691,6 +712,9 @@ class Checklist extends syncnode_client_1.SyncView {
         this.name.addEventListener('click', () => { this.editModal.show(); });
         this.addBinding('name', 'innerHTML', 'data.name');
         this.addBinding('groups', 'update', 'data.groups');
+    }
+    render() {
+        this.el.classList.toggle('hidden', !this.data);
     }
 }
 exports.Checklist = Checklist;
@@ -728,10 +752,28 @@ class Item extends syncnode_client_1.SyncView {
     }
 }
 exports.Item = Item;
+class ChecklistListItem extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.name = this.add('div', { "innerHTML": "", "className": "" });
+        this.el.className += ' ';
+        this.el.className += ' ChecklistListItem_style';
+        this.el.addEventListener('click', this.onClick.bind(this));
+        this.addBinding('name', 'innerHTML', 'data.name');
+    }
+    onClick() {
+        this.emit('selected', this.data);
+    }
+}
+exports.ChecklistListItem = ChecklistListItem;
 syncnode_client_1.SyncView.addGlobalStyle('.EditItem_style', ` padding: 8px; border: 1px solid #777; `);
 syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', ` max-width: 900px; margin: 1em auto; `);
 syncnode_client_1.SyncView.addGlobalStyle('.Checklist_style', ` max-width: 400px; `);
 syncnode_client_1.SyncView.addGlobalStyle('.Item_style', ` padding: 8px; border: 1px solid #777; `);
+syncnode_client_1.SyncView.addGlobalStyle('.ChecklistListItem_style', ` 
+    border: 1px solid #777;
+    padding: 8px;
+  `);
 
 
 /***/ }),

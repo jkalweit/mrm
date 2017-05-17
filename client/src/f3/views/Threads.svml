@@ -1,21 +1,24 @@
 {
 import * as Models from '../models/Threads';
-import { AdminMode, Input, SimpleHeader } from '../../Components';
+import { AddText, AdminMode, Input, SimpleHeader } from '../../Components';
 }
 
 
-AddText({ btnText: 'add' })[row]
-  #input:input[row-fill]
-  #addBtn:button[row-nofill material-icons] $options.btnText
-    onClick() { this.emit('add'); }
-  init() {
-    this.bind();
-  }
-
 MainView<Models.Main>[border-light]
   .style { height: 400px; }
-  #title[header-small] 'F3 York2'
-  #threads:Threads $data.threads
+  #title[header-small] 'F3 York'
+  //#threads:Threads $data.threads
+  #forumPost:ForumPost
+
+
+ForumPost
+  .style { width: 400px; margin-left: 4px; }
+  #title:Input({ label: 'Title', labelWidth: '150px' })
+  #date:Input({ label: 'Workout Date', labelWidth: '150px' })
+  #youtube:Input({ label: 'Name-O-Rama', labelWidth: '150px' })
+  #q:Input({ label: 'Q', labelWidth: '150px' })
+  #pax:Input({ label: 'PAX', labelWidth: '150px', textarea: true })
+
 
 Threads<Models.Threads>[row]
   #threads:ThreadsList[row-nofill border-light] $data.active

@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -256,8 +256,12 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         SyncView.prototype.addView = function (view, className, parent) {
             view.init();
             if (className)
-                view.el.className += ' ' + className;
-            this.el.appendChild(view.el);
+                view.el.className = (view.el.className + ' ' + className).trim();
+            var container = this.el;
+            if (parent) {
+                container = parent.el || parent;
+            }
+            container.appendChild(view.el);
             return view;
         };
         SyncView.prototype.addBinding = function (memberName, prop, value) {
@@ -601,70 +605,47 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(0)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_client_1) {
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(0), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_client_1, Components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var AdminMode = (function (_super) {
-        __extends(AdminMode, _super);
-        function AdminMode(options) {
-            if (options === void 0) { options = {}; }
-            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
-            _this.enabled = false;
-            _this.el.className += ' ';
-            return _this;
-        }
-        AdminMode.prototype.init = function () {
-            var _this = this;
-            document.addEventListener('keypress', function (e) {
-                if (e.keyCode === 30) {
-                    _this.enabled = !_this.enabled;
-                    _this.emit('changed', _this.enabled);
-                }
-            });
-        };
-        return AdminMode;
-    }(syncnode_client_1.SyncView));
-    exports.AdminMode = AdminMode;
-    var AddText = (function (_super) {
-        __extends(AddText, _super);
-        function AddText(options) {
-            if (options === void 0) { options = {}; }
-            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({ btnText: 'add' }, options)) || this;
-            _this.input = _this.add('input', { "innerHTML": "", "className": "row-fill row-fill" });
-            _this.addBtn = _this.add('button', { "innerHTML": "", "className": "row-nofill material-icons row-nofill material-icons" });
-            _this.el.className += ' row';
-            _this.addBtn.addEventListener('click', function () { _this.emit('add'); });
-            _this.addBinding('addBtn', 'innerHTML', 'options.btnText');
-            return _this;
-        }
-        AddText.prototype.init = function () {
-            this.bind();
-        };
-        return AddText;
-    }(syncnode_client_1.SyncView));
-    exports.AddText = AddText;
     var MainView = (function (_super) {
         __extends(MainView, _super);
         function MainView(options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
-            _this.title = _this.add('div', { "innerHTML": "F3 York2", "className": "header-small header-small" });
-            _this.threads = _this.addView(new Threads(), '', 'undefined');
+            _this.title = _this.add('div', { "innerHTML": "F3 York", "className": "header-small header-small" });
+            _this.forumPost = _this.addView(new ForumPost(), '', undefined);
             _this.el.className += ' border-light';
             _this.el.className += ' MainView_style';
-            _this.addBinding('threads', 'update', 'data.threads');
             return _this;
         }
         return MainView;
     }(syncnode_client_1.SyncView));
     exports.MainView = MainView;
+    var ForumPost = (function (_super) {
+        __extends(ForumPost, _super);
+        function ForumPost(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
+            _this.title = _this.addView(new Components_1.Input({ label: 'Title', labelWidth: '150px' }), '', undefined);
+            _this.date = _this.addView(new Components_1.Input({ label: 'Workout Date', labelWidth: '150px' }), '', undefined);
+            _this.youtube = _this.addView(new Components_1.Input({ label: 'Name-O-Rama', labelWidth: '150px' }), '', undefined);
+            _this.q = _this.addView(new Components_1.Input({ label: 'Q', labelWidth: '150px' }), '', undefined);
+            _this.pax = _this.addView(new Components_1.Input({ label: 'PAX', labelWidth: '150px', textarea: true }), '', undefined);
+            _this.el.className += ' ';
+            _this.el.className += ' ForumPost_style';
+            return _this;
+        }
+        return ForumPost;
+    }(syncnode_client_1.SyncView));
+    exports.ForumPost = ForumPost;
     var Threads = (function (_super) {
         __extends(Threads, _super);
         function Threads(options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
-            _this.threads = _this.addView(new ThreadsList(), 'row-nofill border-light', 'undefined');
-            _this.selectedThread = _this.addView(new Thread(), 'row-nofill border-light', 'undefined');
+            _this.threads = _this.addView(new ThreadsList(), 'row-nofill border-light', undefined);
+            _this.selectedThread = _this.addView(new Thread(), 'row-nofill border-light', undefined);
             _this.el.className += ' row';
             _this.threads.on('selected', function (thread) {
                 _this.selectedThread.update(thread);
@@ -689,9 +670,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
             _this.title = _this.add('div', { "innerHTML": "Threads", "className": "header-small header-small" });
-            _this.adminMode = _this.addView(new AdminMode(), '', 'undefined');
-            _this.newThread = _this.addView(new AddText(), ' AddText_newThread_style', 'undefined');
-            _this.list = _this.addView(new syncnode_client_1.SyncList({ item: ThreadItem }), '', 'undefined');
+            _this.adminMode = _this.addView(new Components_1.AdminMode(), '', undefined);
+            _this.newThread = _this.addView(new Components_1.AddText(), ' AddText_newThread_style', undefined);
+            _this.list = _this.addView(new syncnode_client_1.SyncList({ item: ThreadItem }), '', undefined);
             _this.el.className += ' ';
             _this.el.className += ' ThreadsList_style';
             _this.adminMode.on('changed', function (enabled) {
@@ -738,9 +719,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
             _this.header = _this.add('div', { "innerHTML": "", "className": "row header-small row header-small" });
             _this.name = _this.add('div', { "parent": "header", "innerHTML": "", "className": "row-fill row-fill" });
             _this.del = _this.add('button', { "parent": "header", "innerHTML": "delete", "className": "row-nofill material-icons button_del_style row-nofill material-icons" });
-            _this.list = _this.addView(new syncnode_client_1.SyncList({ item: ThreadMessage }), '', 'undefined');
-            _this.newMsg = _this.addView(new AddText(), '', 'undefined');
-            _this.adminMode = _this.addView(new AdminMode(), '', 'undefined');
+            _this.list = _this.addView(new syncnode_client_1.SyncList({ item: ThreadMessage }), '', undefined);
+            _this.newMsg = _this.addView(new Components_1.AddText(), '', undefined);
+            _this.adminMode = _this.addView(new Components_1.AdminMode(), '', undefined);
             _this.el.className += ' ';
             _this.el.className += ' Thread_style';
             _this.addBinding('name', 'innerHTML', 'data.name');
@@ -780,6 +761,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
     }(syncnode_client_1.SyncView));
     exports.ThreadMessage = ThreadMessage;
     syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', " height: 400px; ");
+    syncnode_client_1.SyncView.addGlobalStyle('.ForumPost_style', " width: 400px; margin-left: 4px; ");
     syncnode_client_1.SyncView.addGlobalStyle('.ThreadsList_style', " min-width: 200px; ");
     syncnode_client_1.SyncView.addGlobalStyle('.ThreadItem_style', " border-bottom: 1px solid #CCC; ");
     syncnode_client_1.SyncView.addGlobalStyle('.Thread_style', " min-width: 300px; ");
@@ -790,6 +772,255 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(0)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_client_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Input = (function (_super) {
+        __extends(Input, _super);
+        function Input(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', textarea: false }, options)) || this;
+            _this.label = _this.add('span', { "innerHTML": "", "className": " span_label_style" });
+            _this.el.className += ' ';
+            _this.el.className += ' Input_style';
+            _this.el.addEventListener('change', _this.onChange.bind(_this));
+            return _this;
+        }
+        Input.prototype.onChange = function () {
+            var val = this.input.value;
+            if (this.options.twoway && this.options.key) {
+                this.data.set(this.options.key, val);
+            }
+            this.emit('change', val);
+        };
+        Input.prototype.value = function () {
+            return this.input.value;
+        };
+        Input.prototype.clear = function () {
+            this.input.value = '';
+        };
+        Input.prototype.init = function () {
+            this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
+            syncnode_client_1.SyncUtils.mergeMap(this.input.style, {
+                flex: 1,
+                fontSize: '1em',
+                padding: '0.5em 0',
+                backgroundColor: 'transparent',
+                border: 'none',
+                borderBottom: '1px solid rgba(0,0,0,0.5)'
+            });
+            this.el.appendChild(this.input);
+            this.label.style.width = this.options.labelWidth;
+            if (this.options.label) {
+                this.label.innerHTML = this.options.label;
+            }
+            this.label.style.display = this.options.label ? 'flex' : 'none';
+        };
+        Input.prototype.render = function () {
+            if (this.data) {
+                this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+            }
+        };
+        return Input;
+    }(syncnode_client_1.SyncView));
+    exports.Input = Input;
+    syncnode_client_1.SyncView.addGlobalStyle('.span_label_style', "\n            display: flex;\n            flex-direction: column;\n            justify-content: center;\n        ");
+    var Modal = (function (_super) {
+        __extends(Modal, _super);
+        function Modal(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({ hideOnClick: true }, options)) || this;
+            _this.viewContainer = _this.add('div', { "innerHTML": "", "className": "" });
+            _this.el.className += ' ';
+            _this.el.className += ' Modal_style';
+            _this.el.addEventListener('click', _this.onClick.bind(_this));
+            _this.viewContainer.addEventListener('click', function (e) { e.stopPropagation(); });
+            return _this;
+        }
+        Modal.prototype.onClick = function () { if (this.options.hideOnClick) {
+            this.hide();
+        } };
+        Modal.prototype.init = function () {
+            var _this = this;
+            this.hide();
+            if (this.options.view) {
+                this.view = new this.options.view();
+                this.view.on('hide', function () {
+                    _this.hide();
+                    _this.emit('hide');
+                });
+                this.viewContainer.appendChild(this.view.el);
+            }
+        };
+        Modal.prototype.render = function () {
+            if (this.view)
+                this.view.update(this.data);
+        };
+        return Modal;
+    }(syncnode_client_1.SyncView));
+    exports.Modal = Modal;
+    var SimpleHeader = (function (_super) {
+        __extends(SimpleHeader, _super);
+        function SimpleHeader(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
+            _this.title = _this.add('span', { "innerHTML": "", "className": "row-fill span_title_style row-fill" });
+            _this.addBtn = _this.add('button', { "innerHTML": "Add", "className": "row-nofill row-nofill" });
+            _this.el.className += ' row';
+            _this.addBtn.addEventListener('click', function () { _this.emit('add'); });
+            return _this;
+        }
+        SimpleHeader.prototype.showButtons = function (val) {
+            this.addBtn.style.display = val ? 'flex' : 'none';
+        };
+        SimpleHeader.prototype.init = function () {
+            this.title.innerHTML = this.options.title;
+        };
+        return SimpleHeader;
+    }(syncnode_client_1.SyncView));
+    exports.SimpleHeader = SimpleHeader;
+    syncnode_client_1.SyncView.addGlobalStyle('.span_title_style', " \n            font-weight: bold; \n            font-size: 1.5em;\n        ");
+    var Tabs = (function (_super) {
+        __extends(Tabs, _super);
+        function Tabs(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
+            _this.tabsArr = [];
+            _this.headers = _this.add('div', { "innerHTML": "", "className": "row div_headers_style row" });
+            _this.tabs = _this.add('div', { "innerHTML": "", "className": "" });
+            _this.el.className += ' ';
+            return _this;
+        }
+        Tabs.prototype.addTab = function (title, view) {
+            var _this = this;
+            var tab = new Tab();
+            tab.header = new TabHeaderItem({ text: title });
+            tab.header.tabsContainer = this;
+            tab.header.init();
+            tab.view = view;
+            tab.view.init();
+            tab.init();
+            tab.header.on('selected', function () {
+                _this.selectedItem = tab.header;
+                _this.emit('selected', _this.selectedItem);
+                _this.tabs.innerHTML = '';
+                _this.tabs.appendChild(tab.view.el);
+            });
+            this.headers.appendChild(tab.header.el);
+            this.tabsArr.push(tab);
+        };
+        Tabs.prototype.selectFirstTab = function () {
+            if (this.tabsArr.length) {
+                this.tabsArr[0].header.select();
+            }
+        };
+        return Tabs;
+    }(syncnode_client_1.SyncView));
+    exports.Tabs = Tabs;
+    syncnode_client_1.SyncView.addGlobalStyle('.div_headers_style', " border-bottom: 1px solid #CCC; ");
+    var TabHeaderItem = (function (_super) {
+        __extends(TabHeaderItem, _super);
+        function TabHeaderItem(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
+            _this.text = _this.add('span', { "innerHTML": "", "className": "" });
+            _this.el.className += ' row-nofill pad-small no-select';
+            _this.el.className += ' TabHeaderItem_style';
+            _this.el.addEventListener('click', _this.onClick.bind(_this));
+            _this.addBinding('text', 'innerHTML', 'options.text');
+            return _this;
+        }
+        TabHeaderItem.prototype.select = function () {
+            this.emit('selected', this);
+        };
+        TabHeaderItem.prototype.onClick = function () {
+            this.select();
+        };
+        TabHeaderItem.prototype.init = function () {
+            var _this = this;
+            this.bind();
+            this.tabsContainer.on('selected', function (item) {
+                var selected = item === _this;
+                _this.el.style.border = selected ? '1px solid #666' : '1px solid #BBB';
+                _this.el.style.borderBottom = selected ? 'none' : '1px solid #BBB';
+                _this.el.style.backgroundColor = selected ? '#FFF' : '#CCC';
+            });
+        };
+        return TabHeaderItem;
+    }(syncnode_client_1.SyncView));
+    exports.TabHeaderItem = TabHeaderItem;
+    var Tab = (function (_super) {
+        __extends(Tab, _super);
+        function Tab(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
+            _this.el.className += ' ';
+            return _this;
+        }
+        return Tab;
+    }(syncnode_client_1.SyncView));
+    exports.Tab = Tab;
+    var AddText = (function (_super) {
+        __extends(AddText, _super);
+        function AddText(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({ btnText: 'add' }, options)) || this;
+            _this.input = _this.add('input', { "innerHTML": "", "className": "row-fill row-fill" });
+            _this.addBtn = _this.add('button', { "innerHTML": "", "className": "row-nofill material-icons row-nofill material-icons" });
+            _this.el.className += ' row';
+            _this.addBtn.addEventListener('click', function () { _this.emit('add', _this.input.value); });
+            _this.addBinding('addBtn', 'innerHTML', 'options.btnText');
+            return _this;
+        }
+        AddText.prototype.clear = function () { this.input.value = ''; };
+        AddText.prototype.init = function () {
+            this.bind();
+        };
+        return AddText;
+    }(syncnode_client_1.SyncView));
+    exports.AddText = AddText;
+    var AdminMode = (function (_super) {
+        __extends(AdminMode, _super);
+        function AdminMode(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
+            _this.enabled = false;
+            _this.el.className += ' ';
+            return _this;
+        }
+        AdminMode.prototype.init = function () {
+            var _this = this;
+            document.addEventListener('keypress', function (e) {
+                if (e.keyCode === 30) {
+                    _this.enabled = !_this.enabled;
+                    _this.emit('changed', _this.enabled);
+                }
+            });
+        };
+        return AdminMode;
+    }(syncnode_client_1.SyncView));
+    exports.AdminMode = AdminMode;
+    syncnode_client_1.SyncView.addGlobalStyle('.Input_style', " \n        width: 100%;\n        display: flex; \n    ");
+    syncnode_client_1.SyncView.addGlobalStyle('.Modal_style', " \n        position: fixed;\n        left: 0; right: 0; top: 0; bottom: 0;\n        background-color: rgba(0,0,0,0.7);\n        overflow-y: scroll;\n        display: flex;\n        align-items: center;\n        justify-content: center;\t\n    ");
+    syncnode_client_1.SyncView.addGlobalStyle('.TabHeaderItem_style', " border: 1px solid #BBB; min-width: 50px; text-align: center; ");
+}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(0), __webpack_require__(1)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_client_1, Threads_1) {
@@ -810,7 +1041,6 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 
 
 /***/ }),
-/* 3 */,
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 

@@ -2,10 +2,12 @@ import { SyncNode } from "syncnode-common";
 import { SyncView, SyncList, SyncUtils } from "syncnode-client";
 
 export class Input extends SyncView<SyncNode> {
-	label = this.add('span', {"innerHTML":"","className":""});
-	input = this.add('input', {"innerHTML":"","className":" input_input_style"});
+
+        input: HTMLInputElement | HTMLTextAreaElement;
+    
+ 	label = this.add('span', {"innerHTML":"","className":" span_label_style"});
 	constructor(options: any = {}) {
-		super(SyncUtils.mergeMap({ twoway: true, labelWidth: '100px' }, options));
+		super(SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', textarea: false }, options));
 		this.el.className += ' ';
 		this.el.className += ' Input_style';
 		this.el.addEventListener('change', this.onChange.bind(this));
@@ -24,27 +26,35 @@ export class Input extends SyncView<SyncNode> {
         this.input.value = '';
     }
 	init() {
+        this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
+        SyncUtils.mergeMap(this.input.style, {
+            flex: 1,
+            fontSize: '1em',
+            padding: '0.5em 0',
+            backgroundColor: 'transparent',
+            border: 'none',
+            borderBottom: '1px solid rgba(0,0,0,0.5)'
+        });
+        this.el.appendChild(this.input);
+
         this.label.style.width = this.options.labelWidth;
-    }
-	render() {		
         if(this.options.label) {
             this.label.innerHTML = this.options.label;
         }
         this.label.style.display = this.options.label ? 'flex' : 'none';
+    }
+	render() {		
         if(this.data) {
             this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
         }
     }
 }
 
-SyncView.addGlobalStyle('.input_input_style', `
-            flex: 1;
-            font-size: 1em;
-            padding: 0.5em 0;
-            background-color: transparent;
-            border: none;
-            border-bottom: 1px solid rgba(0,0,0,0.5);
-    `);
+SyncView.addGlobalStyle('.span_label_style', `
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        `);
 export class Modal extends SyncView<SyncNode> {
 
         view: SyncView<SyncNode>;

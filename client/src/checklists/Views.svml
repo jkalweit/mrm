@@ -81,15 +81,33 @@ EditItem<Models.Item>[row]
       this.data.parent.remove(this.data.key);
     }
 
-MainView<Models.Main>[pad-small]
+MainView<Models.Main>[row pad-small]
+  @{
+    selectedChecklist: Models.List;
+  }
   .style { max-width: 900px; margin: 1em auto; }
+  #checklists:Checklists[row-nofill] $data
+    .style { width: 250px; }
+    onSelected(list: Models.List) {
+      console.log('list', list)
+      this.selectedChecklist = list;
+      this.bind();
+    }
+  #checklist:Checklist[row-fill] $selectedChecklist
+    .style { margin-left: 1em; }
+
+Checklists<Models.Main>
   #addModal:Modal({ view: NewChecklist }) $data.checklists
   #header[row]
     .style { margin-bottom: 1em; }
     #title[row-fill bold] 'Checklists'
     #showModal:button[row-nofill] 'New Checklist' 
       onClick() { this.addModal.show(); }
-  #checklists:SyncList({ item: Checklist }) $data.checklists
+  #checklists:SyncList({ item: ChecklistListItem }) $data.checklists
+    onSelected(view: SyncView<SyncNode>, list: Models.List) { 
+      this.emit('selected', list); 
+    }
+
   
 Checklist<Models.List>
   .style { max-width: 400px; }
@@ -99,6 +117,9 @@ Checklist<Models.List>
       onClick() { this.editModal.show(); }
   #groups:SyncList({ item: Group }) $data.groups
     .style { margin-left: 1em; }
+  render() {
+    this.el.classList.toggle('hidden', !this.data);
+  }
     
 Group<Models.Group>
   #editModal:Modal({ view: EditGroup }) $data
@@ -118,4 +139,16 @@ Item<Models.Item>
   }
   render() {
     this.name.style.textDecoration = this.data.completedAt ? 'line-through' : 'none';
+  }
+
+
+
+ChecklistListItem
+  .style { 
+    border: 1px solid #777;
+    padding: 8px;
+  }
+  #name $data.name
+  onClick() {
+    this.emit('selected', this.data);
   }

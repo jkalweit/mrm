@@ -3,30 +3,28 @@ import { SyncView, SyncList, SyncUtils } from "syncnode-client";
 
 
 import * as Models from '../models/Threads';
-import { AdminMode, Input, SimpleHeader } from '../../Components';
-
-export class AddText extends SyncView<SyncNode> {
-	input = this.add('input', {"innerHTML":"","className":"row-fill row-fill"});
-	addBtn = this.add('button', {"innerHTML":"","className":"row-nofill material-icons row-nofill material-icons"});
-	constructor(options: any = {}) {
-		super(SyncUtils.mergeMap({ btnText: 'add' }, options));
-		this.el.className += ' row';
-		this.addBtn.addEventListener('click', () => {  this.emit('add');  });
-		this.addBinding('addBtn', 'innerHTML', 'options.btnText');
-	}
-	init() {
-    this.bind();
-  }
-}
+import { AddText, AdminMode, Input, SimpleHeader } from '../../Components';
 
 export class MainView extends SyncView<Models.Main> {
-	title = this.add('div', {"innerHTML":"F3 York2","className":"header-small header-small"});
-	threads = this.addView(new Threads(), '', undefined);
+	title = this.add('div', {"innerHTML":"F3 York","className":"header-small header-small"});
+	forumPost = this.addView(new ForumPost(), '', undefined);
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({}, options));
 		this.el.className += ' border-light';
 		this.el.className += ' MainView_style';
-		this.addBinding('threads', 'update', 'data.threads');
+	}
+}
+
+export class ForumPost extends SyncView<SyncNode> {
+	title = this.addView(new Input({ label: 'Title', labelWidth: '150px' }), '', undefined);
+	date = this.addView(new Input({ label: 'Workout Date', labelWidth: '150px' }), '', undefined);
+	youtube = this.addView(new Input({ label: 'Name-O-Rama', labelWidth: '150px' }), '', undefined);
+	q = this.addView(new Input({ label: 'Q', labelWidth: '150px' }), '', undefined);
+	pax = this.addView(new Input({ label: 'PAX', labelWidth: '150px', textarea: true }), '', undefined);
+	constructor(options: any = {}) {
+		super(SyncUtils.mergeMap({}, options));
+		this.el.className += ' ';
+		this.el.className += ' ForumPost_style';
 	}
 }
 
@@ -131,6 +129,7 @@ export class ThreadMessage extends SyncView<Models.ThreadMessage> {
 }
 
 SyncView.addGlobalStyle('.MainView_style', ` height: 400px; `);
+SyncView.addGlobalStyle('.ForumPost_style', ` width: 400px; margin-left: 4px; `);
 SyncView.addGlobalStyle('.ThreadsList_style', ` min-width: 200px; `);
 SyncView.addGlobalStyle('.ThreadItem_style', ` border-bottom: 1px solid #CCC; `);
 SyncView.addGlobalStyle('.Thread_style', ` min-width: 300px; `);

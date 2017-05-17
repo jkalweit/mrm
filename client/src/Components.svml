@@ -1,19 +1,18 @@
 
-Input({ twoway: true, labelWidth: '100px' })
+Input({ twoway: true, labelWidth: '100px', textarea: false })
+    @{
+        input: HTMLInputElement | HTMLTextAreaElement;
+    }
     .style { 
         width: 100%;
         display: flex; 
     }
     #label:span
-    #input:input
         .style {
-            flex: 1;
-            font-size: 1em;
-            padding: 0.5em 0;
-            background-color: transparent;
-            border: none;
-            border-bottom: 1px solid rgba(0,0,0,0.5);
-    }
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 	onChange() { 
         let val = this.input.value;
         if(this.options.twoway && this.options.key) {
@@ -28,13 +27,24 @@ Input({ twoway: true, labelWidth: '100px' })
         this.input.value = '';
     }
     init() {
+        this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
+        SyncUtils.mergeMap(this.input.style, {
+            flex: 1,
+            fontSize: '1em',
+            padding: '0.5em 0',
+            backgroundColor: 'transparent',
+            border: 'none',
+            borderBottom: '1px solid rgba(0,0,0,0.5)'
+        });
+        this.el.appendChild(this.input);
+
         this.label.style.width = this.options.labelWidth;
-    }
-    render() {		
         if(this.options.label) {
             this.label.innerHTML = this.options.label;
         }
         this.label.style.display = this.options.label ? 'flex' : 'none';
+    }
+    render() {		
         if(this.data) {
             this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
         }
