@@ -217,14 +217,26 @@ class SyncView extends syncnode_common_1.SyncNodeEventEmitter {
                 el.addEventListener(key, spec.events[key]);
             });
         }
-        this.el.appendChild(el);
+        if (spec.parent) {
+            let parent = this[spec.parent];
+            if (parent.el)
+                parent = parent.el;
+            parent.appendChild(el);
+        }
+        else {
+            this.el.appendChild(el);
+        }
         return el;
     }
-    addView(view, className, tag) {
+    addView(view, className, parent) {
         view.init();
         if (className)
-            view.el.className += ' ' + className;
-        this.el.appendChild(view.el);
+            view.el.className = (view.el.className + ' ' + className).trim();
+        let container = this.el;
+        if (parent) {
+            container = parent.el || parent;
+        }
+        container.appendChild(view.el);
         return view;
     }
     addBinding(memberName, prop, value) {
@@ -549,51 +561,212 @@ const Components_1 = __webpack_require__(2);
 class MainView extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h1', { "innerHTML": "Management Review", "className": "pad-small pad-small" });
-        this.title2 = this.add('h2', { "innerHTML": "9.3.2 Managment Review Inputs", "className": "pad-small pad-small" });
-        this.tabs = this.addView(new Components_1.Tabs(), '');
-        this.el.className += ' pad-small';
-        this.el.className += ' MainView_style';
+        this.first = false;
+        this.section4_1 = this.addView(new Section4_1(), 'row-nofill page pad-big border Section4_1_section4_1_style', undefined);
+        this.section9 = this.add('div', { "innerHTML": "", "className": "row-nofill page pad-big border col div_section9_style row-nofill page pad-big border col" });
+        this.top = this.add('div', { "parent": "section9", "innerHTML": "", "className": "col-no-fill col-no-fill" });
+        this.title9 = this.add('h2', { "parent": "top", "innerHTML": "9 Performance Evaluation", "className": "pad-small highlight border-bottom pad-small highlight border-bottom" });
+        this.title9_3 = this.add('h3', { "parent": "top", "innerHTML": "9.3 Management Review", "className": "pad-small highlight border-bottom pad-small highlight border-bottom" });
+        this.title9_3_1 = this.add('h4', { "parent": "top", "innerHTML": "9.3.1 General", "className": "pad-small highlight border-bottom pad-small highlight border-bottom" });
+        this.text9_3_1 = this.add('p', { "parent": "top", "innerHTML": "Top management shall review the organization’s quality management system, at planned intervals, to ensure its continuing suitability, adequacy, effectiveness and alignment with  the strategic direction of the organization.", "className": "highlight highlight" });
+        this.title9_3_2 = this.add('h4', { "parent": "top", "innerHTML": "9.3.2 Managment Review Inputs", "className": "pad-small highlight border-bottom pad-small highlight border-bottom" });
+        this.tabs = this.addView(new Components_1.Tabs(), 'col-fill border Tabs_tabs_style', this.section9);
+        this.section10 = this.add('div', { "innerHTML": "", "className": "row-nofill page pad-big border row-nofill page pad-big border" });
+        this.title10 = this.add('h2', { "parent": "section10", "innerHTML": "10 Improvement", "className": "pad-small highlight border-bottom pad-small highlight border-bottom" });
+        this.el.className += ' row';
+        this.addBinding('section4_1', 'update', 'selectedMRM.section4_1');
     }
     init() {
-        this.tabs.addTab('a', new SectionA());
-        this.tabs.addTab('b', new SectionB());
-        this.tabs.addTab('c-1', new SectionC1());
-        this.tabs.addTab('c-2', new SectionC2());
-        this.tabs.addTab('c-3', new SectionC3());
-        this.tabs.addTab('c-4', new SectionC4());
-        this.tabs.addTab('c-5', new SectionC5());
-        this.tabs.addTab('c-6', new SectionC6());
-        this.tabs.addTab('c-7', new SectionC7());
-        this.tabs.addTab('d', new SectionD());
-        this.tabs.addTab('e', new SectionE());
-        this.tabs.addTab('f', new SectionF());
-        this.tabs.selectFirstTab();
+        document.body.style.backgroundColor = '#DDD';
+        this.sectionA = new SectionA();
+        this.sectionA.init();
+        this.tabs.addTab('a', this.sectionA);
+        this.sectionB = new SectionB();
+        this.sectionB.init();
+        this.tabs.addTab('b', this.sectionB);
+        this.sectionC1 = new SectionC1();
+        this.sectionC1.init();
+        this.tabs.addTab('c-1', this.sectionC1);
+        this.sectionC2 = new SectionC2();
+        this.sectionC2.init();
+        this.tabs.addTab('c-2', this.sectionC2);
+        this.sectionC3 = new SectionC3();
+        this.sectionC3.init();
+        this.tabs.addTab('c-3', this.sectionC3);
+        this.sectionC4 = new SectionC4();
+        this.sectionC4.init();
+        this.tabs.addTab('c-4', this.sectionC4);
+        this.sectionC5 = new SectionC5();
+        this.sectionC5.init();
+        this.tabs.addTab('c-5', this.sectionC5);
+        this.sectionC6 = new SectionC6();
+        this.sectionC6.init();
+        this.tabs.addTab('c-6', this.sectionC6);
+        this.sectionC7 = new SectionC7();
+        this.sectionC7.init();
+        this.tabs.addTab('c-7', this.sectionC7);
+        this.sectionD = new SectionD();
+        this.sectionD.init();
+        this.tabs.addTab('d', this.sectionD);
+        this.sectionE = new SectionE();
+        this.sectionE.init();
+        this.tabs.addTab('e', this.sectionE);
+        this.sectionF = new SectionF();
+        this.sectionF.init();
+        this.tabs.addTab('f', this.sectionF);
+        this.tabs.selectTab(5);
+    }
+    addMRM() {
+        /*
+          this.data.mrms.setItem({
+            name: '2017',
+            section4_1: { positive: {}, negative: {}}
+          });
+        */
+    }
+    render() {
+        if (!this.first) {
+            this.first = true;
+            this.selectedMRM = syncnode_client_1.SyncUtils.toArray(this.data.mrms)[0];
+            this.bind();
+        }
+        this.sectionA.update(this.data);
+        this.sectionB.update(this.data);
+        this.sectionC1.update(this.data);
+        this.sectionC2.update(this.data);
+        this.sectionC3.update(this.data);
+        this.sectionC4.update(this.data);
+        this.sectionC5.update(this.data);
+        this.sectionC6.update(this.data);
+        this.sectionC7.update(this.data);
+        this.sectionD.update(this.data);
+        this.sectionE.update(this.data);
+        this.sectionF.update(this.data);
     }
 }
 exports.MainView = MainView;
+syncnode_client_1.SyncView.addGlobalStyle('.Section4_1_section4_1_style', ` width: 800px; max-height: 1000px; margin: 1em; background-color: #FFF; `);
+syncnode_client_1.SyncView.addGlobalStyle('.div_section9_style', ` width: 800px; max-height: 1000px; margin: 1em; background-color: #FFF; `);
+syncnode_client_1.SyncView.addGlobalStyle('.Tabs_tabs_style', ` height: 800px; `);
+class Section4_1 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title4 = this.add('h2', { "innerHTML": "4 Context of the organization", "className": "highlight border-bottom highlight border-bottom" });
+        this.title4_1 = this.add('h3', { "innerHTML": "4.1 Understanding the organization and it's context", "className": "highlight border-bottom highlight border-bottom" });
+        this.description = this.add('p', { "innerHTML": "The organization shall  determine external and internal issues that are relevant to its purpose and its strategic direction and that affect its ability to achieve the intended result(s) of its quality management system.", "className": "highlight highlight" });
+        this.title1 = this.add('h4', { "innerHTML": "Positive Issues", "className": "" });
+        this.positive = this.addView(new syncnode_client_1.SyncList({ item: Section4_1Item }), '', undefined);
+        this.addPositive = this.add('button', { "innerHTML": "New Positive", "className": " button_addPositive_style" });
+        this.title2 = this.add('h4', { "innerHTML": "Negative Issues", "className": "" });
+        this.negative = this.addView(new syncnode_client_1.SyncList({ item: Section4_1Item }), '', undefined);
+        this.addNegative = this.add('button', { "innerHTML": "New Negative", "className": " button_addNegative_style" });
+        this.el.className += ' ';
+        this.addBinding('positive', 'update', 'data.positive');
+        this.addPositive.addEventListener('click', () => {
+            this.data.positive.setItem({
+                createdAt: new Date().toISOString(),
+                occurredAt: new Date().toISOString(),
+                text: '',
+                note: ''
+            });
+        });
+        this.addBinding('negative', 'update', 'data.negative');
+        this.addNegative.addEventListener('click', () => {
+            this.data.negative.setItem({
+                createdAt: new Date().toISOString(),
+                occurredAt: new Date().toISOString(),
+                text: '',
+                note: ''
+            });
+        });
+    }
+}
+exports.Section4_1 = Section4_1;
+syncnode_client_1.SyncView.addGlobalStyle('.button_addPositive_style', ` margin-top: 1em; `);
+syncnode_client_1.SyncView.addGlobalStyle('.button_addNegative_style', ` margin-top: 1em; `);
+class Section4_1Item extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.text = this.addView(new Components_1.TextArea({ key: 'text' }), 'row-fill', undefined);
+        this.el.className += ' row';
+        this.addBinding('text', 'update', 'data');
+    }
+}
+exports.Section4_1Item = Section4_1Item;
 class SectionA extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "The status of actions from previous management reviews", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "The status of actions from previous management reviews", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionA' }), '', undefined);
         this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
     }
 }
 exports.SectionA = SectionA;
 class SectionB extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "Changes in external and internal issues that are relevant to the quality management system", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "Changes in external and internal issues that are relevant to the quality management system", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionB' }), '', undefined);
+        this.exceptions = this.addView(new ExceptionsView(), '', undefined);
         this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
+    }
+    init() {
+        console.log('sending request');
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://server1.imt.local/imtsqlrest/api/exceptions');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let results = JSON.parse(JSON.parse(xhr.responseText));
+                this.exceptions.update({ exceptions: results });
+            }
+            else {
+                alert('Request failed.  Returned status of ' + xhr.status);
+            }
+        }.bind(this);
+        xhr.send();
     }
 }
 exports.SectionB = SectionB;
 class SectionC1 extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "Trends in customer satisfaction and feedback from relevant interested parties", "className": "" });
-        this.customerConcerns = this.addView(new CustomerConcernsView(), '');
+        this.title = this.add('h3', { "innerHTML": "Customer satisfaction and feedback from relevant interested parties", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionC1' }), '', undefined);
         this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
+    }
+}
+exports.SectionC1 = SectionC1;
+class SectionC2 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "The extent to which quality objectives have been met", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionC2' }), '', undefined);
+        this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
+    }
+}
+exports.SectionC2 = SectionC2;
+class SectionC3 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "Process performance and conformity of products and services", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionC3' }), '', undefined);
+        this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
+    }
+}
+exports.SectionC3 = SectionC3;
+class SectionC4 extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h3', { "innerHTML": "Nonconformities and corrective actions", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionC4' }), '', undefined);
+        this.customerConcerns = this.addView(new CustomerConcernsView(), '', undefined);
+        this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
     }
     init() {
         console.log('sending request');
@@ -613,102 +786,74 @@ class SectionC1 extends syncnode_client_1.SyncView {
         xhr.send();
     }
 }
-exports.SectionC1 = SectionC1;
-class SectionC2 extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "The extent to which quality objectives have been met", "className": "" });
-        this.el.className += ' pad-small';
-    }
-}
-exports.SectionC2 = SectionC2;
-class SectionC3 extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "Process performance and conformity of products and services", "className": "" });
-        this.exceptions = this.addView(new ExceptionsView(), '');
-        this.el.className += ' pad-small';
-    }
-    init() {
-        console.log('sending request');
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'http://server1.imt.local/imtsqlrest/api/exceptions');
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                let results = JSON.parse(JSON.parse(xhr.responseText));
-                this.exceptions.update({ exceptions: results });
-            }
-            else {
-                alert('Request failed.  Returned status of ' + xhr.status);
-            }
-        }.bind(this);
-        xhr.send();
-    }
-}
-exports.SectionC3 = SectionC3;
-class SectionC4 extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "Nonconformities and corrective actions", "className": "" });
-        this.el.className += ' pad-small';
-    }
-}
 exports.SectionC4 = SectionC4;
 class SectionC5 extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "Monitoring and measurement results", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "Monitoring and measurement results", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionC5' }), '', undefined);
         this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
     }
 }
 exports.SectionC5 = SectionC5;
 class SectionC6 extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "Audit results", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "Audit results", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionC6' }), '', undefined);
         this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
     }
 }
 exports.SectionC6 = SectionC6;
 class SectionC7 extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "The performance of external providers", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "The performance of external providers", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionC7' }), '', undefined);
         this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
     }
 }
 exports.SectionC7 = SectionC7;
 class SectionD extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "The adequacy of resources", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "The adequacy of resources", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionD' }), '', undefined);
         this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
     }
 }
 exports.SectionD = SectionD;
 class SectionE extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "The effectiveness of actions taken to address risks and opportunities (see 6.1)", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "The effectiveness of actions taken to address risks and opportunities (see 6.1)", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionE' }), '', undefined);
         this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
     }
 }
 exports.SectionE = SectionE;
 class SectionF extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "Opportunities for improvement", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "Opportunities for improvement", "className": "highlight highlight" });
+        this.input = this.addView(new Components_1.TextArea({ key: 'sectionF' }), '', undefined);
         this.el.className += ' pad-small';
+        this.addBinding('input', 'update', 'data');
     }
 }
 exports.SectionF = SectionF;
 class CustomerConcernsView extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h4', { "innerHTML": "Customer Concerns", "className": " h4_title_style" });
-        this.internal = this.addView(new ExceptionsResponsibility(), '');
-        this.external = this.addView(new ExceptionsResponsibility(), '');
-        this.undetermined = this.addView(new ExceptionsResponsibility(), '');
+        this.title = this.add('h4', { "innerHTML": "Customer Concerns", "className": "border-bottom border-bottom" });
+        this.internal = this.addView(new ExceptionsResponsibility(), '', undefined);
+        this.external = this.addView(new ExceptionsResponsibility(), '', undefined);
+        this.undetermined = this.addView(new ExceptionsResponsibility(), '', undefined);
         this.el.className += ' ';
         this.addBinding('internal', 'update', 'data.Internal');
         this.addBinding('external', 'update', 'data.External');
@@ -716,14 +861,13 @@ class CustomerConcernsView extends syncnode_client_1.SyncView {
     }
 }
 exports.CustomerConcernsView = CustomerConcernsView;
-syncnode_client_1.SyncView.addGlobalStyle('.h4_title_style', ` border-bottom: 1px solid #000; `);
 class ExceptionsView extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h4', { "innerHTML": "Exceptions", "className": " h4_title_style" });
-        this.internal = this.addView(new ExceptionsResponsibility(), '');
-        this.external = this.addView(new ExceptionsResponsibility(), '');
-        this.undetermined = this.addView(new ExceptionsResponsibility(), '');
+        this.title = this.add('h4', { "innerHTML": "Exceptions", "className": "border-bottom border-bottom" });
+        this.internal = this.addView(new ExceptionsResponsibility(), '', undefined);
+        this.external = this.addView(new ExceptionsResponsibility(), '', undefined);
+        this.undetermined = this.addView(new ExceptionsResponsibility(), '', undefined);
         this.el.className += ' ';
         this.addBinding('internal', 'update', 'data.exceptions.Internal');
         this.addBinding('external', 'update', 'data.exceptions.External');
@@ -731,7 +875,6 @@ class ExceptionsView extends syncnode_client_1.SyncView {
     }
 }
 exports.ExceptionsView = ExceptionsView;
-syncnode_client_1.SyncView.addGlobalStyle('.h4_title_style', ` border-bottom: 1px solid #000; `);
 class ExceptionsResponsibility extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
@@ -778,7 +921,6 @@ class ExceptionsViewCategory extends syncnode_client_1.SyncView {
 }
 exports.ExceptionsViewCategory = ExceptionsViewCategory;
 syncnode_client_1.SyncView.addGlobalStyle('.span_s1_style', ` width: 175px; `);
-syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', ` max-width: 900px; border: 1px solid #CCC; margin: 0 auto; `);
 
 
 /***/ }),
@@ -791,9 +933,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const syncnode_client_1 = __webpack_require__(0);
 class Input extends syncnode_client_1.SyncView {
     constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px' }, options));
-        this.label = this.add('span', { "innerHTML": "", "className": "" });
-        this.input = this.add('input', { "innerHTML": "", "className": " input_input_style" });
+        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', textarea: false }, options));
+        this.label = this.add('span', { "innerHTML": "", "className": " span_label_style" });
         this.el.className += ' ';
         this.el.className += ' Input_style';
         this.el.addEventListener('change', this.onChange.bind(this));
@@ -808,28 +949,91 @@ class Input extends syncnode_client_1.SyncView {
     value() {
         return this.input.value;
     }
-    init() {
-        this.label.style.width = this.options.labelWidth;
+    clear() {
+        this.input.value = '';
     }
-    render() {
+    init() {
+        this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
+        syncnode_client_1.SyncUtils.mergeMap(this.input.style, {
+            flex: 1,
+            fontSize: '1em',
+            padding: '0.5em 0',
+            backgroundColor: 'transparent',
+            border: 'none'
+        });
+        if (this.options.textarea) {
+            this.el.style.border = '1px solid rgba(0,0,0,0.25)';
+            this.el.style.padding = '4px';
+        }
+        else {
+            this.el.style.borderBottom = '1px solid rgba(0,0,0,0.25)';
+        }
+        this.el.appendChild(this.input);
+        this.label.style.width = this.options.labelWidth;
         if (this.options.label) {
             this.label.innerHTML = this.options.label;
         }
         this.label.style.display = this.options.label ? 'flex' : 'none';
+    }
+    render() {
         if (this.data) {
-            this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+            let val = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+            if (this.input.value != val) {
+                this.input.value = val;
+            }
         }
     }
 }
 exports.Input = Input;
-syncnode_client_1.SyncView.addGlobalStyle('.input_input_style', `
-            flex: 1;
-            font-size: 1em;
-            padding: 0.5em 0;
-            background-color: transparent;
-            border: none;
-            border-bottom: 1px solid rgba(0,0,0,0.5);
-    `);
+syncnode_client_1.SyncView.addGlobalStyle('.span_label_style', `
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        `);
+class TextArea extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({ tag: 'textarea', twoway: true, labelWidth: '100px' }, options));
+        this.el.className += ' ';
+        this.el.className += ' TextArea_style';
+        this.el.addEventListener('input', this.onInput.bind(this));
+        this.el.addEventListener('change', this.onChange.bind(this));
+    }
+    onInput() {
+        this.autoresize();
+    }
+    onChange() {
+        let val = this.el.value;
+        if (this.options.twoway && this.options.key) {
+            this.data.set(this.options.key, val);
+        }
+        this.emit('change', val);
+    }
+    value() {
+        return this.el.value;
+    }
+    clear() {
+        this.el.value = '';
+    }
+    autoresize() {
+        var scrollLeft = window.pageXOffset ||
+            (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+        var scrollTop = window.pageYOffset ||
+            (document.documentElement || document.body.parentNode || document.body).scrollTop;
+        this.el.style.minHeight = 'auto';
+        this.el.style.minHeight = this.el.scrollHeight + 10 + 'px';
+        window.scrollTo(scrollLeft, scrollTop);
+    }
+    render() {
+        if (this.data) {
+            let val = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+            if (this.el.value != val) {
+                this.el.value = val;
+            }
+        }
+        this.autoresize();
+    }
+}
+exports.TextArea = TextArea;
 class Modal extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({ hideOnClick: true }, options));
@@ -846,14 +1050,10 @@ class Modal extends syncnode_client_1.SyncView {
         this.hide();
         if (this.options.view) {
             this.view = new this.options.view();
-            var _me = this;
-            let handler = function (eventName) {
-                if (eventName === 'hide') {
-                    _me.hide();
-                }
-                _me.emit.apply(_me, arguments);
-            };
-            this.view.onAny(handler.bind(this));
+            this.view.on('hide', () => {
+                this.hide();
+                this.emit('hide');
+            });
             this.viewContainer.appendChild(this.view.el);
         }
     }
@@ -887,9 +1087,10 @@ class Tabs extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
         this.tabsArr = [];
-        this.headers = this.add('div', { "innerHTML": "", "className": "row div_headers_style row" });
-        this.tabs = this.add('div', { "innerHTML": "", "className": "" });
-        this.el.className += ' ';
+        this.headers = this.add('div', { "innerHTML": "", "className": "col-nofill row div_headers_style col-nofill row" });
+        this.scrollContainer = this.add('div', { "innerHTML": "", "className": "col-fill div_scrollContainer_style col-fill" });
+        this.tabs = this.add('div', { "parent": "scrollContainer", "innerHTML": "", "className": "" });
+        this.el.className += ' col';
     }
     addTab(title, view) {
         let tab = new Tab();
@@ -908,14 +1109,15 @@ class Tabs extends syncnode_client_1.SyncView {
         this.headers.appendChild(tab.header.el);
         this.tabsArr.push(tab);
     }
-    selectFirstTab() {
-        if (this.tabsArr.length) {
-            this.tabsArr[0].header.select();
+    selectTab(index) {
+        if (this.tabsArr.length > index) {
+            this.tabsArr[index].header.select();
         }
     }
 }
 exports.Tabs = Tabs;
 syncnode_client_1.SyncView.addGlobalStyle('.div_headers_style', ` border-bottom: 1px solid #CCC; `);
+syncnode_client_1.SyncView.addGlobalStyle('.div_scrollContainer_style', ` overflow-y: auto; `);
 class TabHeaderItem extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
@@ -955,17 +1157,42 @@ class AddText extends syncnode_client_1.SyncView {
         this.input = this.add('input', { "innerHTML": "", "className": "row-fill row-fill" });
         this.addBtn = this.add('button', { "innerHTML": "", "className": "row-nofill material-icons row-nofill material-icons" });
         this.el.className += ' row';
-        this.addBtn.addEventListener('click', () => { this.emit('add'); });
+        this.addBtn.addEventListener('click', () => { this.emit('add', this.input.value); });
         this.addBinding('addBtn', 'innerHTML', 'options.btnText');
     }
+    clear() { this.input.value = ''; }
     init() {
         this.bind();
     }
 }
 exports.AddText = AddText;
+class AdminMode extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.enabled = false;
+        this.el.className += ' ';
+    }
+    init() {
+        document.addEventListener('keypress', e => {
+            if (e.keyCode === 30) {
+                this.enabled = !this.enabled;
+                this.emit('changed', this.enabled);
+            }
+        });
+    }
+}
+exports.AdminMode = AdminMode;
 syncnode_client_1.SyncView.addGlobalStyle('.Input_style', ` 
         width: 100%;
         display: flex; 
+    `);
+syncnode_client_1.SyncView.addGlobalStyle('.TextArea_style', ` 
+        width: 100%;
+        display: flex; 
+        flex: 1;
+        font-size: 1em;
+        padding: 0.5em;
+        background-color: transparent;
     `);
 syncnode_client_1.SyncView.addGlobalStyle('.Modal_style', ` 
         position: fixed;

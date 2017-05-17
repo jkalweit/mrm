@@ -1,38 +1,233 @@
 {
 import * as Models from './Models';
-import { Input, SimpleHeader, Tabs } from '../Components';
+import { Input, TextArea, SimpleHeader, Tabs } from '../Components';
 }
 
 
-MainView<Models.Main>[pad-small]
-  .style { max-width: 900px; border: 1px solid #CCC; margin: 0 auto; }
-  #title:h1[pad-small] 'Management Review'
-  #title2:h2[pad-small] '9.3.2 Managment Review Inputs'
-  #tabs:Tabs
+MainView<Models.Main>[row]
+  @{
+    first: boolean = false;
+    selectedMRM: Models.MRM;
+    sectionA: SectionA;
+    sectionB: SectionB;
+    sectionC1: SectionC1;
+    sectionC2: SectionC2;
+    sectionC3: SectionC3;
+    sectionC4: SectionC4;
+    sectionC5: SectionC5;
+    sectionC6: SectionC6;
+    sectionC7: SectionC7;
+    sectionD: SectionD;
+    sectionE: SectionE;
+    sectionF: SectionF;
+  }
+  //#title:h1[pad-small] 'Management Review'
+  #section4_1:Section4_1[row-nofill page pad-big border] $selectedMRM.section4_1
+    .style { width: 800px; max-height: 1000px; margin: 1em; background-color: #FFF; }
+    /*
+  #section5[row-nofill page pad-big border]
+    #title5:h2[pad-small highlight border-bottom] '5 Leadership'
+  #section6[row-nofill page pad-big border]
+    #title6:h2[pad-small highlight border-bottom] '6 Planning'
+  #section7[row-nofill page pad-big border]
+    #title7:h2[pad-small highlight border-bottom] '7 Support'
+  #section8[row-nofill page pad-big border]
+    #title8:h2[pad-small highlight border-bottom] '8 Operation'
+    */
+  #section9[row-nofill page pad-big border col]
+    .style { width: 800px; max-height: 1000px; margin: 1em; background-color: #FFF; }
+    #top[col-no-fill]
+      #title9:h2[pad-small highlight border-bottom] '9 Performance Evaluation'
+      #title9_3:h3[pad-small highlight border-bottom] '9.3 Management Review'
+      #title9_3_1:h4[pad-small highlight border-bottom] '9.3.1 General'
+      #text9_3_1:p[highlight] 'Top management shall review the organization’s quality management system, at planned intervals, to ensure its continuing suitability, adequacy, effectiveness and alignment with  the strategic direction of the organization.'
+      #title9_3_2:h4[pad-small highlight border-bottom] '9.3.2 Managment Review Inputs'
+    #tabs:Tabs[col-fill border]
+      .style { height: 800px; }
+  #section10[row-nofill page pad-big border]
+    #title10:h2[pad-small highlight border-bottom] '10 Improvement'
   init() {
-    this.tabs.addTab('a', new SectionA());
-    this.tabs.addTab('b', new SectionB());
-    this.tabs.addTab('c-1', new SectionC1());
-    this.tabs.addTab('c-2', new SectionC2());
-    this.tabs.addTab('c-3', new SectionC3());
-    this.tabs.addTab('c-4', new SectionC4());
-    this.tabs.addTab('c-5', new SectionC5());
-    this.tabs.addTab('c-6', new SectionC6());
-    this.tabs.addTab('c-7', new SectionC7());
-    this.tabs.addTab('d', new SectionD());
-    this.tabs.addTab('e', new SectionE());
-    this.tabs.addTab('f', new SectionF());
-    this.tabs.selectFirstTab();
+    document.body.style.backgroundColor = '#DDD';
+
+
+    this.sectionA = new SectionA();
+    this.sectionA.init();
+    this.tabs.addTab('a', this.sectionA);
+
+    this.sectionB = new SectionB();
+    this.sectionB.init();
+    this.tabs.addTab('b', this.sectionB);
+    
+    this.sectionC1 = new SectionC1();
+    this.sectionC1.init();
+    this.tabs.addTab('c-1', this.sectionC1);
+
+    this.sectionC2 = new SectionC2();
+    this.sectionC2.init();
+    this.tabs.addTab('c-2', this.sectionC2);
+
+    this.sectionC3 = new SectionC3();
+    this.sectionC3.init();
+    this.tabs.addTab('c-3', this.sectionC3);
+
+    this.sectionC4 = new SectionC4();
+    this.sectionC4.init();
+    this.tabs.addTab('c-4', this.sectionC4);
+
+
+    this.sectionC5 = new SectionC5();
+    this.sectionC5.init();
+    this.tabs.addTab('c-5', this.sectionC5);
+
+
+    this.sectionC6 = new SectionC6();
+    this.sectionC6.init();
+    this.tabs.addTab('c-6', this.sectionC6);
+
+
+    this.sectionC7 = new SectionC7();
+    this.sectionC7.init();
+    this.tabs.addTab('c-7', this.sectionC7);
+
+
+    this.sectionD = new SectionD();
+    this.sectionD.init();
+    this.tabs.addTab('d', this.sectionD);
+
+
+    this.sectionE = new SectionE();
+    this.sectionE.init();
+    this.tabs.addTab('e', this.sectionE);
+
+
+    this.sectionF = new SectionF();
+    this.sectionF.init();
+    this.tabs.addTab('f', this.sectionF);
+
+    this.tabs.selectTab(5);
+  }
+  addMRM() {
+    /*
+      this.data.mrms.setItem({
+        name: '2017',
+        section4_1: { positive: {}, negative: {}}
+      });
+    */
+  }
+  render() {
+    if(!this.first) {
+      this.first = true;
+      this.selectedMRM = SyncUtils.toArray(this.data.mrms)[0];
+      this.bind();
+    }
+    this.sectionA.update(this.data);
+    this.sectionB.update(this.data);
+    this.sectionC1.update(this.data);
+    this.sectionC2.update(this.data);
+    this.sectionC3.update(this.data);
+    this.sectionC4.update(this.data);
+    this.sectionC5.update(this.data);
+    this.sectionC6.update(this.data);
+    this.sectionC7.update(this.data);
+    this.sectionD.update(this.data);
+    this.sectionE.update(this.data);
+    this.sectionF.update(this.data);
   }
 
+
+
+
+
+
+Section4_1<Models.Section4_1>
+  #title4:h2[highlight border-bottom] '4 Context of the organization'
+  #title4_1:h3[highlight border-bottom] '4.1 Understanding the organization and it\'s context'
+  #description:p[highlight] 'The organization shall  determine external and internal issues that are relevant to its purpose and its strategic direction and that affect its ability to achieve the intended result(s) of its quality management system.'
+  #title1:h4 'Positive Issues'
+  //#tableHeader[row]
+    //#th1[row-fill pad-small bold] 'Issue'
+    //#th2[row-fill pad-small bold] 'Result'
+  #positive:SyncList({ item: Section4_1Item }) $data.positive
+  #addPositive:button 'New Positive'
+    .style { margin-top: 1em; }
+    onClick() {
+      this.data.positive.setItem({
+        createdAt: new Date().toISOString(),
+        occurredAt: new Date().toISOString(),
+        text: '',
+        note: ''
+      });
+    }
+  #title2:h4 'Negative Issues'
+  //#tableHeader2[row]
+    //#th3[row-fill pad-small bold] 'Issue'
+    //#th4[row-fill pad-small bold] 'Result'
+  #negative:SyncList({ item: Section4_1Item }) $data.negative
+  #addNegative:button 'New Negative'
+    .style { margin-top: 1em; }
+    onClick() {
+      this.data.negative.setItem({
+        createdAt: new Date().toISOString(),
+        occurredAt: new Date().toISOString(),
+        text: '',
+        note: ''
+      });
+    }
+
+
+
+
+Section4_1Item[row]
+  #text:TextArea({ key: 'text' })[row-fill] $data
+  //#note:Input({ key: 'note', textarea: true })[row-fill] $data
+
+
+
+
+
+
+
+
+
 SectionA[pad-small]
-  #title:h3 'The status of actions from previous management reviews'
+  #title:h3[highlight] 'The status of actions from previous management reviews'
+  #input:TextArea({ key: 'sectionA' }) $data
 
 SectionB[pad-small]
-  #title:h3 'Changes in external and internal issues that are relevant to the quality management system'
+  #title:h3[highlight] 'Changes in external and internal issues that are relevant to the quality management system'
+  #input:TextArea({ key: 'sectionB' }) $data
+  #exceptions:ExceptionsView
+  init() {
+      console.log('sending request')
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', 'http://server1.imt.local/imtsqlrest/api/exceptions');
+			xhr.onload = function() {
+   				if (xhr.status === 200) {
+					  let results = JSON.parse(JSON.parse(xhr.responseText));
+					  this.exceptions.update({ exceptions: results });
+   				}
+   				else {
+       				alert('Request failed.  Returned status of ' + xhr.status);
+   				}
+			}.bind(this);
+		  xhr.send();
+  }
 
 SectionC1[pad-small]
-  #title:h3 'Trends in customer satisfaction and feedback from relevant interested parties'
+  #title:h3[highlight] 'Customer satisfaction and feedback from relevant interested parties'
+  #input:TextArea({ key: 'sectionC1' }) $data
+
+SectionC2[pad-small]
+  #title:h3[highlight] 'The extent to which quality objectives have been met'
+  #input:TextArea({ key: 'sectionC2' }) $data
+
+SectionC3[pad-small]
+  #title:h3[highlight] 'Process performance and conformity of products and services'
+  #input:TextArea({ key: 'sectionC3' }) $data
+
+SectionC4[pad-small]
+  #title:h3[highlight] 'Nonconformities and corrective actions'
+  #input:TextArea({ key: 'sectionC4' }) $data
   #customerConcerns:CustomerConcernsView
   init() {
       console.log('sending request')
@@ -52,61 +247,40 @@ SectionC1[pad-small]
 		  xhr.send();
   }
 
-SectionC2[pad-small]
-  #title:h3 'The extent to which quality objectives have been met'
-
-SectionC3[pad-small]
-  #title:h3 'Process performance and conformity of products and services'
-  #exceptions:ExceptionsView
-  init() {
-      console.log('sending request')
-			var xhr = new XMLHttpRequest();
-			xhr.open('GET', 'http://server1.imt.local/imtsqlrest/api/exceptions');
-			xhr.onload = function() {
-   				if (xhr.status === 200) {
-					  let results = JSON.parse(JSON.parse(xhr.responseText));
-					  this.exceptions.update({ exceptions: results });
-   				}
-   				else {
-       				alert('Request failed.  Returned status of ' + xhr.status);
-   				}
-			}.bind(this);
-		  xhr.send();
-  }
-
-SectionC4[pad-small]
-  #title:h3 'Nonconformities and corrective actions'
-
 SectionC5[pad-small]
-  #title:h3 'Monitoring and measurement results'
+  #title:h3[highlight] 'Monitoring and measurement results'
+  #input:TextArea({ key: 'sectionC5' }) $data
 
 SectionC6[pad-small]
-  #title:h3 'Audit results'
+  #title:h3[highlight] 'Audit results'
+  #input:TextArea({ key: 'sectionC6' }) $data
 
 SectionC7[pad-small]
-  #title:h3 'The performance of external providers'
+  #title:h3[highlight] 'The performance of external providers'
+  #input:TextArea({ key: 'sectionC7' }) $data
 
 SectionD[pad-small]
-  #title:h3 'The adequacy of resources'
+  #title:h3[highlight] 'The adequacy of resources'
+  #input:TextArea({ key: 'sectionD' }) $data
 
 SectionE[pad-small]
-  #title:h3 'The effectiveness of actions taken to address risks and opportunities (see 6.1)'
+  #title:h3[highlight] 'The effectiveness of actions taken to address risks and opportunities (see 6.1)'
+  #input:TextArea({ key: 'sectionE' }) $data
 
 SectionF[pad-small]
-  #title:h3 'Opportunities for improvement'
+  #title:h3[highlight] 'Opportunities for improvement'
+  #input:TextArea({ key: 'sectionF' }) $data
 
 
 CustomerConcernsView
-    #title:h4 'Customer Concerns'
-		  .style { border-bottom: 1px solid #000; }
+    #title:h4[border-bottom] 'Customer Concerns'
     #internal:ExceptionsResponsibility $data.Internal
     #external:ExceptionsResponsibility $data.External
     #undetermined:ExceptionsResponsibility $data.Undetermined
 
 
 ExceptionsView
-    #title:h4 'Exceptions'
-		  .style { border-bottom: 1px solid #000; }
+    #title:h4[border-bottom] 'Exceptions'
     #internal:ExceptionsResponsibility $data.exceptions.Internal
     #external:ExceptionsResponsibility $data.exceptions.External
     #undetermined:ExceptionsResponsibility $data.exceptions.Undetermined

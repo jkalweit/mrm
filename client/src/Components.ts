@@ -32,9 +32,15 @@ export class Input extends SyncView<SyncNode> {
             fontSize: '1em',
             padding: '0.5em 0',
             backgroundColor: 'transparent',
-            border: 'none',
-            borderBottom: '1px solid rgba(0,0,0,0.5)'
+            border: 'none'
         });
+        if(this.options.textarea) {
+            this.el.style.border = '1px solid rgba(0,0,0,0.25)';
+            this.el.style.padding = '4px';
+        } else {
+            this.el.style.borderBottom = '1px solid rgba(0,0,0,0.25)';
+        }
+
         this.el.appendChild(this.input);
 
         this.label.style.width = this.options.labelWidth;
@@ -45,7 +51,11 @@ export class Input extends SyncView<SyncNode> {
     }
 	render() {		
         if(this.data) {
-            this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+            let val = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+
+            if(this.input.value != val) {
+                this.input.value = val;
+            }
         }
     }
 }
@@ -55,6 +65,54 @@ SyncView.addGlobalStyle('.span_label_style', `
             flex-direction: column;
             justify-content: center;
         `);
+export class TextArea extends SyncView<SyncNode> {
+	constructor(options: any = {}) {
+		super(SyncUtils.mergeMap({ tag: 'textarea', twoway: true, labelWidth: '100px' }, options));
+		this.el.className += ' ';
+		this.el.className += ' TextArea_style';
+		this.el.addEventListener('input', this.onInput.bind(this));
+		this.el.addEventListener('change', this.onChange.bind(this));
+	}
+	onInput() {
+        this.autoresize();
+    }
+	onChange() { 
+        let val = (this.el as HTMLTextAreaElement).value;
+        if(this.options.twoway && this.options.key) {
+            this.data.set(this.options.key, val);
+        }
+        this.emit('change', val); 
+    }
+	value() {
+        return (this.el as HTMLTextAreaElement).value;
+    }
+	clear() {
+        (this.el as HTMLTextAreaElement).value = '';
+    }
+	autoresize() {
+        var scrollLeft = window.pageXOffset ||
+            (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+
+        var scrollTop  = window.pageYOffset || 
+            (document.documentElement || document.body.parentNode || document.body).scrollTop;
+
+        this.el.style.minHeight = 'auto';
+        this.el.style.minHeight = this.el.scrollHeight + 10 + 'px';
+
+        window.scrollTo(scrollLeft, scrollTop);
+    }
+	render() {		
+        if(this.data) {
+            let val = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+
+            if((this.el as HTMLTextAreaElement).value != val) {
+                (this.el as HTMLTextAreaElement).value = val;
+            }
+        }
+        this.autoresize();
+    }
+}
+
 export class Modal extends SyncView<SyncNode> {
 
         view: SyncView<SyncNode>;
@@ -109,11 +167,12 @@ export class Tabs extends SyncView<SyncNode> {
     selectedItem: TabHeaderItem;
     tabsArr: Tab[] = [];
   
- 	headers = this.add('div', {"innerHTML":"","className":"row div_headers_style row"});
-	tabs = this.add('div', {"innerHTML":"","className":""});
+ 	headers = this.add('div', {"innerHTML":"","className":"col-nofill row div_headers_style col-nofill row"});
+	scrollContainer = this.add('div', {"innerHTML":"","className":"col-fill div_scrollContainer_style col-fill"});
+	tabs = this.add('div', {"parent":"scrollContainer","innerHTML":"","className":""});
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({}, options));
-		this.el.className += ' ';
+		this.el.className += ' col';
 	}
 	addTab(title: string, view: SyncView<SyncNode>) {
     let tab = new Tab();
@@ -134,14 +193,15 @@ export class Tabs extends SyncView<SyncNode> {
     this.headers.appendChild(tab.header.el);
     this.tabsArr.push(tab);
   }
-	selectFirstTab() {
-    if(this.tabsArr.length) {
-        this.tabsArr[0].header.select();
+	selectTab(index: number) {
+    if(this.tabsArr.length > index) {
+        this.tabsArr[index].header.select();
     }
   }
 }
 
 SyncView.addGlobalStyle('.div_headers_style', ` border-bottom: 1px solid #CCC; `);
+SyncView.addGlobalStyle('.div_scrollContainer_style', ` overflow-y: auto; `);
 export class TabHeaderItem extends SyncView<SyncNode> {
 
     tabsContainer: Tabs;
@@ -218,6 +278,14 @@ export class AdminMode extends SyncView<SyncNode> {
 SyncView.addGlobalStyle('.Input_style', ` 
         width: 100%;
         display: flex; 
+    `);
+SyncView.addGlobalStyle('.TextArea_style', ` 
+        width: 100%;
+        display: flex; 
+        flex: 1;
+        font-size: 1em;
+        padding: 0.5em;
+        background-color: transparent;
     `);
 SyncView.addGlobalStyle('.Modal_style', ` 
         position: fixed;

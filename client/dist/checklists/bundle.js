@@ -786,9 +786,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const syncnode_client_1 = __webpack_require__(0);
 class Input extends syncnode_client_1.SyncView {
     constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px' }, options));
-        this.label = this.add('span', { "innerHTML": "", "className": "" });
-        this.input = this.add('input', { "innerHTML": "", "className": " input_input_style" });
+        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', textarea: false }, options));
+        this.label = this.add('span', { "innerHTML": "", "className": " span_label_style" });
         this.el.className += ' ';
         this.el.className += ' Input_style';
         this.el.addEventListener('change', this.onChange.bind(this));
@@ -807,27 +806,87 @@ class Input extends syncnode_client_1.SyncView {
         this.input.value = '';
     }
     init() {
+        this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
+        syncnode_client_1.SyncUtils.mergeMap(this.input.style, {
+            flex: 1,
+            fontSize: '1em',
+            padding: '0.5em 0',
+            backgroundColor: 'transparent',
+            border: 'none'
+        });
+        if (this.options.textarea) {
+            this.el.style.border = '1px solid rgba(0,0,0,0.25)';
+            this.el.style.padding = '4px';
+        }
+        else {
+            this.el.style.borderBottom = '1px solid rgba(0,0,0,0.25)';
+        }
+        this.el.appendChild(this.input);
         this.label.style.width = this.options.labelWidth;
-    }
-    render() {
         if (this.options.label) {
             this.label.innerHTML = this.options.label;
         }
         this.label.style.display = this.options.label ? 'flex' : 'none';
+    }
+    render() {
         if (this.data) {
-            this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+            let val = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+            if (this.input.value != val) {
+                this.input.value = val;
+            }
         }
     }
 }
 exports.Input = Input;
-syncnode_client_1.SyncView.addGlobalStyle('.input_input_style', `
-            flex: 1;
-            font-size: 1em;
-            padding: 0.5em 0;
-            background-color: transparent;
-            border: none;
-            border-bottom: 1px solid rgba(0,0,0,0.5);
-    `);
+syncnode_client_1.SyncView.addGlobalStyle('.span_label_style', `
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        `);
+class TextArea extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({ tag: 'textarea', twoway: true, labelWidth: '100px' }, options));
+        this.el.className += ' ';
+        this.el.className += ' TextArea_style';
+        this.el.addEventListener('input', this.onInput.bind(this));
+        this.el.addEventListener('change', this.onChange.bind(this));
+    }
+    onInput() {
+        this.autoresize();
+    }
+    onChange() {
+        let val = this.el.value;
+        if (this.options.twoway && this.options.key) {
+            this.data.set(this.options.key, val);
+        }
+        this.emit('change', val);
+    }
+    value() {
+        return this.el.value;
+    }
+    clear() {
+        this.el.value = '';
+    }
+    autoresize() {
+        var scrollLeft = window.pageXOffset ||
+            (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+        var scrollTop = window.pageYOffset ||
+            (document.documentElement || document.body.parentNode || document.body).scrollTop;
+        this.el.style.minHeight = 'auto';
+        this.el.style.minHeight = this.el.scrollHeight + 10 + 'px';
+        window.scrollTo(scrollLeft, scrollTop);
+    }
+    render() {
+        if (this.data) {
+            let val = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+            if (this.el.value != val) {
+                this.el.value = val;
+            }
+        }
+        this.autoresize();
+    }
+}
+exports.TextArea = TextArea;
 class Modal extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({ hideOnClick: true }, options));
@@ -881,9 +940,10 @@ class Tabs extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
         this.tabsArr = [];
-        this.headers = this.add('div', { "innerHTML": "", "className": "row div_headers_style row" });
-        this.tabs = this.add('div', { "innerHTML": "", "className": "" });
-        this.el.className += ' ';
+        this.headers = this.add('div', { "innerHTML": "", "className": "col-nofill row div_headers_style col-nofill row" });
+        this.scrollContainer = this.add('div', { "innerHTML": "", "className": "col-fill div_scrollContainer_style col-fill" });
+        this.tabs = this.add('div', { "parent": "scrollContainer", "innerHTML": "", "className": "" });
+        this.el.className += ' col';
     }
     addTab(title, view) {
         let tab = new Tab();
@@ -902,14 +962,15 @@ class Tabs extends syncnode_client_1.SyncView {
         this.headers.appendChild(tab.header.el);
         this.tabsArr.push(tab);
     }
-    selectFirstTab() {
-        if (this.tabsArr.length) {
-            this.tabsArr[0].header.select();
+    selectTab(index) {
+        if (this.tabsArr.length > index) {
+            this.tabsArr[index].header.select();
         }
     }
 }
 exports.Tabs = Tabs;
 syncnode_client_1.SyncView.addGlobalStyle('.div_headers_style', ` border-bottom: 1px solid #CCC; `);
+syncnode_client_1.SyncView.addGlobalStyle('.div_scrollContainer_style', ` overflow-y: auto; `);
 class TabHeaderItem extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
@@ -977,6 +1038,14 @@ exports.AdminMode = AdminMode;
 syncnode_client_1.SyncView.addGlobalStyle('.Input_style', ` 
         width: 100%;
         display: flex; 
+    `);
+syncnode_client_1.SyncView.addGlobalStyle('.TextArea_style', ` 
+        width: 100%;
+        display: flex; 
+        flex: 1;
+        font-size: 1em;
+        padding: 0.5em;
+        background-color: transparent;
     `);
 syncnode_client_1.SyncView.addGlobalStyle('.Modal_style', ` 
         position: fixed;

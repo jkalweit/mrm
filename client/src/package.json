@@ -12,5 +12,8 @@
   "dependencies": {
     "syncnode-client": "github:syncnode/syncnode-client",
     "syncnode-svml": "github:syncnode/syncnode-svml"
+  },
+  "devDependencies": {
+    "ts-loader": "^2.0.3"
   }
 }
