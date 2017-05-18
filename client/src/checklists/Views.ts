@@ -4,109 +4,7 @@ import { SyncView, SyncList, SyncUtils } from "syncnode-client";
 
 import * as Models from './Models';
 import { AdminMode, Modal, Input, SimpleHeader, AddText } from '../Components';
-
-export class NewChecklist extends SyncView<SyncNode> {
-	title = this.add('h2', {"innerHTML":"New Checklist","className":""});
-	textInput = this.addView(new Input({ twoway: false }), 'col-nofill', undefined);
-	footer = this.add('div', {"innerHTML":"","className":"col-fill div_footer_style col-fill"});
-	addBtn = this.add('button', {"parent":"footer","innerHTML":"Create Checklist","className":""});
-	cancelBtn = this.add('button', {"parent":"footer","innerHTML":"Cancel","className":""});
-	constructor(options: any = {}) {
-		super(SyncUtils.mergeMap({}, options));
-		this.el.className += ' modal-inner col';
-		this.addBtn.addEventListener('click', () => { 
-        let name = this.textInput.value().trim();
-        if(!name.length) {
-          alert('Name is required.');
-          return;
-        }
-        let item = {
-          name: name,
-          groups: {}
-        };
-        this.data.setItem(item);
-        this.textInput.clear();
-        this.emit('hide');
-       });
-		this.cancelBtn.addEventListener('click', () => {  this.emit('hide');  });
-	}
-}
-
-SyncView.addGlobalStyle('.div_footer_style', ` margin: 1em 0; `);
-export class EditChecklist extends SyncView<Models.List> {
-	title = this.add('h2', {"innerHTML":"Edit Checklist","className":""});
-	textInput = this.addView(new Input({ label: 'Name', key: 'name' }), 'col-nofill', undefined);
-	groupsContainer = this.add('div', {"innerHTML":"","className":" div_groupsContainer_style"});
-	groups = this.addView(new SyncList({ item: Group }), '', this.groupsContainer);
-	addGroup = this.addView(new AddText(), '', this.groupsContainer);
-	footer = this.add('div', {"innerHTML":"","className":"col-fill div_footer_style col-fill"});
-	deleteBtn = this.add('button', {"parent":"footer","innerHTML":"Delete","className":""});
-	closeBtn = this.add('button', {"parent":"footer","innerHTML":"Close","className":""});
-	constructor(options: any = {}) {
-		super(SyncUtils.mergeMap({}, options));
-		this.el.className += ' modal-inner col';
-		this.addBinding('textInput', 'update', 'data');
-		this.addBinding('groups', 'update', 'data.groups');
-		this.addGroup.on('add', (text: string) => { 
-        let group = {
-          name: text,
-          items: {}
-        };
-        this.data.groups.setItem(group);
-        this.addGroup.clear();
-       });
-		this.deleteBtn.addEventListener('click', () => {  
-        if(confirm('Delete Checklist?')) {
-          this.data.parent.remove(this.data.key);
-          this.emit('hide'); 
-        }
-       });
-		this.closeBtn.addEventListener('click', () => {  this.emit('hide');  });
-	}
-}
-
-SyncView.addGlobalStyle('.div_groupsContainer_style', ` margin-left: 1em; margin-top: 1em; `);
-SyncView.addGlobalStyle('.div_footer_style', ` margin: 1em 0; `);
-export class EditGroup extends SyncView<Models.Group> {
-	title = this.add('h2', {"innerHTML":"Edit Checklist Group","className":""});
-	textInput = this.addView(new Input({ label: 'Name', key: 'name' }), 'col-nofill', undefined);
-	itemsContainer = this.add('div', {"innerHTML":"","className":""});
-	items = this.addView(new SyncList({ item: EditItem }), ' SyncList_items_style', this.itemsContainer);
-	addItem = this.addView(new AddText(), '', this.itemsContainer);
-	footer = this.add('div', {"innerHTML":"","className":"col-fill div_footer_style col-fill"});
-	closeBtn = this.add('button', {"parent":"footer","innerHTML":"Close","className":""});
-	constructor(options: any = {}) {
-		super(SyncUtils.mergeMap({}, options));
-		this.el.className += ' modal-inner col';
-		this.addBinding('textInput', 'update', 'data');
-		this.addBinding('items', 'update', 'data.items');
-		this.addItem.on('add', (text: string) => { 
-        let item = {
-          name: text,
-          completedAt: ''
-        };
-        this.data.items.setItem(item);
-        this.addItem.clear();
-       });
-		this.closeBtn.addEventListener('click', () => {  this.emit('hide');  });
-	}
-}
-
-SyncView.addGlobalStyle('.SyncList_items_style', ` margin-left: 1em; `);
-SyncView.addGlobalStyle('.div_footer_style', ` margin: 1em 0; `);
-export class EditItem extends SyncView<Models.Item> {
-	name = this.addView(new Input({ key: 'name' }), 'row-fill', undefined);
-	deleteBtn = this.add('button', {"innerHTML":"delete","className":"material-icons material-icons"});
-	constructor(options: any = {}) {
-		super(SyncUtils.mergeMap({}, options));
-		this.el.className += ' row';
-		this.el.className += ' EditItem_style';
-		this.addBinding('name', 'update', 'data');
-		this.deleteBtn.addEventListener('click', () => {  
-      this.data.parent.remove(this.data.key);
-     });
-	}
-}
+import { NewChecklist, EditChecklist } from './ViewsEdit'
 
 export class MainView extends SyncView<Models.Main> {
 
@@ -151,16 +49,30 @@ export class Checklists extends SyncView<Models.Main> {
 SyncView.addGlobalStyle('.div_header_style', ` margin-bottom: 1em; `);
 export class Checklist extends SyncView<Models.List> {
 	editModal = this.addView(new Modal({ view: EditChecklist }), '', undefined);
-	header = this.add('div', {"innerHTML":"","className":"row row"});
-	name = this.add('div', {"parent":"header","innerHTML":"","className":"row-fill bold center-vert header-small row-fill bold center-vert header-small"});
+	header = this.add('div', {"innerHTML":"","className":"row center-vert header-small row center-vert header-small"});
+	name = this.add('div', {"parent":"header","innerHTML":"","className":"row-fill bold row-fill bold"});
+	editList = this.add('button', {"parent":"header","innerHTML":"Edit List","className":"row-nofill row-nofill"});
+	resetList = this.add('button', {"parent":"header","innerHTML":"Reset List","className":"row-nofill row-nofill"});
 	groups = this.addView(new SyncList({ item: Group }), ' SyncList_groups_style', undefined);
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({}, options));
 		this.el.className += ' ';
 		this.el.className += ' Checklist_style';
 		this.addBinding('editModal', 'update', 'data');
-		this.name.addEventListener('click', () => {  this.editModal.show();  });
 		this.addBinding('name', 'innerHTML', 'data.name');
+		this.editList.addEventListener('click', () => {  this.editModal.show();  });
+		this.resetList.addEventListener('click', () => { 
+        if(!confirm('Reset this checklist?')) return;
+        let merge = {} as any;
+        SyncUtils.forEach(this.data.groups, (group: Models.Group) => {
+          let groupMerge = { items: {}} as any;
+          merge[group.key] = groupMerge;
+          SyncUtils.forEach(group.items, (item: Models.Item) => {
+            groupMerge.items[item.key] = { completedAt: '' };
+          });
+        });
+        this.data.groups.merge(merge);
+       });
 		this.addBinding('groups', 'update', 'data.groups');
 	}
 	render() {
@@ -170,15 +82,12 @@ export class Checklist extends SyncView<Models.List> {
 
 SyncView.addGlobalStyle('.SyncList_groups_style', ` margin-left: 1em; `);
 export class Group extends SyncView<Models.Group> {
-	editModal = this.addView(new Modal({ view: EditGroup }), '', undefined);
 	header = this.add('div', {"innerHTML":"","className":"row row"});
 	name = this.add('div', {"parent":"header","innerHTML":"","className":"row-fill bold center-vert header-small row-fill bold center-vert header-small"});
 	items = this.addView(new SyncList({ item: Item }), ' SyncList_items_style', undefined);
 	constructor(options: any = {}) {
 		super(SyncUtils.mergeMap({}, options));
 		this.el.className += ' ';
-		this.addBinding('editModal', 'update', 'data');
-		this.name.addEventListener('click', () => {  this.editModal.show();  });
 		this.addBinding('name', 'innerHTML', 'data.name');
 		this.addBinding('items', 'update', 'data.items');
 	}
@@ -218,7 +127,6 @@ export class ChecklistListItem extends SyncView<SyncNode> {
   }
 }
 
-SyncView.addGlobalStyle('.EditItem_style', ` padding: 8px; border: 1px solid #777; `);
 SyncView.addGlobalStyle('.MainView_style', ` max-width: 900px; margin: 1em auto; `);
 SyncView.addGlobalStyle('.Checklist_style', ` max-width: 400px; `);
 SyncView.addGlobalStyle('.Item_style', ` padding: 8px; border: 1px solid #777; `);

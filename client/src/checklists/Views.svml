@@ -1,85 +1,8 @@
 {
 import * as Models from './Models';
 import { AdminMode, Modal, Input, SimpleHeader, AddText } from '../Components';
+import { NewChecklist, EditChecklist } from './ViewsEdit'
 }
-
-
-NewChecklist[modal-inner col]
-  #title:h2 'New Checklist'
-  #textInput:Input({ twoway: false })[col-nofill]
-  #footer[col-fill]
-    .style { margin: 1em 0; }
-    #addBtn:button 'Create Checklist'
-      onClick() {
-        let name = this.textInput.value().trim();
-        if(!name.length) {
-          alert('Name is required.');
-          return;
-        }
-        let item = {
-          name: name,
-          groups: {}
-        };
-        this.data.setItem(item);
-        this.textInput.clear();
-        this.emit('hide');
-      }
-    #cancelBtn:button 'Cancel' onClick() { this.emit('hide'); }
-
-
-EditChecklist<Models.List>[modal-inner col]
-  #title:h2 'Edit Checklist'
-  #textInput:Input({ label: 'Name', key: 'name' })[col-nofill] $data
-  #groupsContainer
-    .style { margin-left: 1em; margin-top: 1em; }
-    #groups:SyncList({ item: Group }) $data.groups
-    #addGroup:AddText
-      onAdd(text: string) {
-        let group = {
-          name: text,
-          items: {}
-        };
-        this.data.groups.setItem(group);
-        this.addGroup.clear();
-      }
-  #footer[col-fill]
-    .style { margin: 1em 0; }
-    #deleteBtn:button 'Delete' 
-      onClick() { 
-        if(confirm('Delete Checklist?')) {
-          this.data.parent.remove(this.data.key);
-          this.emit('hide'); 
-        }
-      }
-    #closeBtn:button 'Close' onClick() { this.emit('hide'); }
-
-EditGroup<Models.Group>[modal-inner col]
-  #title:h2 'Edit Checklist Group'
-  #textInput:Input({ label: 'Name', key: 'name' })[col-nofill] $data
-  #itemsContainer
-    #items:SyncList({ item: EditItem }) $data.items
-      .style { margin-left: 1em; }
-    #addItem:AddText
-      onAdd(text: string) {
-        let item = {
-          name: text,
-          completedAt: ''
-        };
-        this.data.items.setItem(item);
-        this.addItem.clear();
-      }
-  #footer[col-fill]
-    .style { margin: 1em 0; }
-    #closeBtn:button 'Close' onClick() { this.emit('hide'); }
-
-
-EditItem<Models.Item>[row]
-  .style { padding: 8px; border: 1px solid #777; }
-  #name:Input({ key: 'name' })[row-fill] $data
-  #deleteBtn:button[material-icons] 'delete' 
-    onClick() { 
-      this.data.parent.remove(this.data.key);
-    }
 
 MainView<Models.Main>[row pad-small]
   @{
@@ -112,9 +35,23 @@ Checklists<Models.Main>
 Checklist<Models.List>
   .style { max-width: 400px; }
   #editModal:Modal({ view: EditChecklist }) $data
-  #header[row]
-    #name[row-fill bold center-vert header-small] $data.name
+  #header[row center-vert header-small]
+    #name[row-fill bold]  $data.name
+    #editList:button[row-nofill] 'Edit List'
       onClick() { this.editModal.show(); }
+    #resetList:button[row-nofill] 'Reset List'
+      onClick() {
+        if(!confirm('Reset this checklist?')) return;
+        let merge = {} as any;
+        SyncUtils.forEach(this.data.groups, (group: Models.Group) => {
+          let groupMerge = { items: {}} as any;
+          merge[group.key] = groupMerge;
+          SyncUtils.forEach(group.items, (item: Models.Item) => {
+            groupMerge.items[item.key] = { completedAt: '' };
+          });
+        });
+        this.data.groups.merge(merge);
+      }
   #groups:SyncList({ item: Group }) $data.groups
     .style { margin-left: 1em; }
   render() {
@@ -122,10 +59,8 @@ Checklist<Models.List>
   }
     
 Group<Models.Group>
-  #editModal:Modal({ view: EditGroup }) $data
   #header[row]
     #name[row-fill bold center-vert header-small] $data.name
-      onClick() { this.editModal.show(); }
   #items:SyncList({ item: Item }) $data.items
     .style { margin-left: 1em; }
 
