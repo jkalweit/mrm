@@ -818,9 +818,15 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
                 fontSize: '1em',
                 padding: '0.5em 0',
                 backgroundColor: 'transparent',
-                border: 'none',
-                borderBottom: '1px solid rgba(0,0,0,0.5)'
+                border: 'none'
             });
+            if (this.options.textarea) {
+                this.el.style.border = '1px solid rgba(0,0,0,0.25)';
+                this.el.style.padding = '4px';
+            }
+            else {
+                this.el.style.borderBottom = '1px solid rgba(0,0,0,0.25)';
+            }
             this.el.appendChild(this.input);
             this.label.style.width = this.options.labelWidth;
             if (this.options.label) {
@@ -830,13 +836,64 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         };
         Input.prototype.render = function () {
             if (this.data) {
-                this.input.value = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+                var val = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+                if (this.input.value != val) {
+                    this.input.value = val;
+                }
             }
         };
         return Input;
     }(syncnode_client_1.SyncView));
     exports.Input = Input;
     syncnode_client_1.SyncView.addGlobalStyle('.span_label_style', "\n            display: flex;\n            flex-direction: column;\n            justify-content: center;\n        ");
+    var TextArea = (function (_super) {
+        __extends(TextArea, _super);
+        function TextArea(options) {
+            if (options === void 0) { options = {}; }
+            var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({ tag: 'textarea', twoway: true, labelWidth: '100px' }, options)) || this;
+            _this.el.className += ' ';
+            _this.el.className += ' TextArea_style';
+            _this.el.addEventListener('input', _this.onInput.bind(_this));
+            _this.el.addEventListener('change', _this.onChange.bind(_this));
+            return _this;
+        }
+        TextArea.prototype.onInput = function () {
+            this.autoresize();
+        };
+        TextArea.prototype.onChange = function () {
+            var val = this.el.value;
+            if (this.options.twoway && this.options.key) {
+                this.data.set(this.options.key, val);
+            }
+            this.emit('change', val);
+        };
+        TextArea.prototype.value = function () {
+            return this.el.value;
+        };
+        TextArea.prototype.clear = function () {
+            this.el.value = '';
+        };
+        TextArea.prototype.autoresize = function () {
+            var scrollLeft = window.pageXOffset ||
+                (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+            var scrollTop = window.pageYOffset ||
+                (document.documentElement || document.body.parentNode || document.body).scrollTop;
+            this.el.style.minHeight = 'auto';
+            this.el.style.minHeight = this.el.scrollHeight + 10 + 'px';
+            window.scrollTo(scrollLeft, scrollTop);
+        };
+        TextArea.prototype.render = function () {
+            if (this.data) {
+                var val = this.options.key ? this.data.get(this.options.key) || '' : this.data || '';
+                if (this.el.value != val) {
+                    this.el.value = val;
+                }
+            }
+            this.autoresize();
+        };
+        return TextArea;
+    }(syncnode_client_1.SyncView));
+    exports.TextArea = TextArea;
     var Modal = (function (_super) {
         __extends(Modal, _super);
         function Modal(options) {
@@ -898,9 +955,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, syncnode_client_1.SyncUtils.mergeMap({}, options)) || this;
             _this.tabsArr = [];
-            _this.headers = _this.add('div', { "innerHTML": "", "className": "row div_headers_style row" });
-            _this.tabs = _this.add('div', { "innerHTML": "", "className": "" });
-            _this.el.className += ' ';
+            _this.headers = _this.add('div', { "innerHTML": "", "className": "col-nofill row div_headers_style col-nofill row" });
+            _this.scrollContainer = _this.add('div', { "innerHTML": "", "className": "col-fill div_scrollContainer_style col-fill" });
+            _this.tabs = _this.add('div', { "parent": "scrollContainer", "innerHTML": "", "className": "" });
+            _this.el.className += ' col';
             return _this;
         }
         Tabs.prototype.addTab = function (title, view) {
@@ -921,15 +979,16 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
             this.headers.appendChild(tab.header.el);
             this.tabsArr.push(tab);
         };
-        Tabs.prototype.selectFirstTab = function () {
-            if (this.tabsArr.length) {
-                this.tabsArr[0].header.select();
+        Tabs.prototype.selectTab = function (index) {
+            if (this.tabsArr.length > index) {
+                this.tabsArr[index].header.select();
             }
         };
         return Tabs;
     }(syncnode_client_1.SyncView));
     exports.Tabs = Tabs;
     syncnode_client_1.SyncView.addGlobalStyle('.div_headers_style', " border-bottom: 1px solid #CCC; ");
+    syncnode_client_1.SyncView.addGlobalStyle('.div_scrollContainer_style', " overflow-y: auto; ");
     var TabHeaderItem = (function (_super) {
         __extends(TabHeaderItem, _super);
         function TabHeaderItem(options) {
@@ -1013,6 +1072,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
     }(syncnode_client_1.SyncView));
     exports.AdminMode = AdminMode;
     syncnode_client_1.SyncView.addGlobalStyle('.Input_style', " \n        width: 100%;\n        display: flex; \n    ");
+    syncnode_client_1.SyncView.addGlobalStyle('.TextArea_style', " \n        width: 100%;\n        display: flex; \n        flex: 1;\n        font-size: 1em;\n        padding: 0.5em;\n        background-color: transparent;\n    ");
     syncnode_client_1.SyncView.addGlobalStyle('.Modal_style', " \n        position: fixed;\n        left: 0; right: 0; top: 0; bottom: 0;\n        background-color: rgba(0,0,0,0.7);\n        overflow-y: scroll;\n        display: flex;\n        align-items: center;\n        justify-content: center;\t\n    ");
     syncnode_client_1.SyncView.addGlobalStyle('.TabHeaderItem_style', " border: 1px solid #BBB; min-width: 50px; text-align: center; ");
 }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
