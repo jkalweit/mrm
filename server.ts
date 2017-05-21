@@ -8,12 +8,14 @@ const server = http.createServer(app);
 const persistThreads = new SyncNodePersistFile('testdata/threads.json', { threads: { active: {}, archived: {}}});
 const persistMrm = new SyncNodePersistFile('testdata/mrm.json', { mrms: {}});
 const persistChecklists = new SyncNodePersistFile('testdata/checklists.json', { checklists: {}});
+const persistDnd = new SyncNodePersistFile('testdata/dnd.json', { toons: {}});
 
 
 const sync = new SyncServer(server);
 const threads = sync.createChannel('threads', persistThreads.data);
 const mrm = sync.createChannel('mrm', persistMrm.data);
 const checklists = sync.createChannel('checklists', persistChecklists.data);
+const dnd = sync.createChannel('dnd', persistDnd.data);
 const reload = sync.createChannel('reload');
 
 app.set('port', process.env.PORT || 3000);
