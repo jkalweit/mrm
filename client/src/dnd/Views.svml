@@ -1,0 +1,13 @@
+{
+import * as Models from './Models';
+import { AdminMode, Modal, Input, TextArea, SimpleHeader, AddText } from '../Components';
+}
+
+MainView<Models.Main>[pad-small]
+  #title:h1 'The Phandalin 5'
+  #toons:SyncList({ item: Toon })[row] $data.toons
+
+Toon<Models.Toon>[row-nofill]
+  .style { widht: 200px; border: 1px solid #777; }
+  #name:Input({ key: 'name' }) $data
+  #note:TextArea({ key: 'note' }) $data
