@@ -14,8 +14,8 @@ export class Input extends SyncView<SyncNode> {
         let val: string | number = this.input.value;
         if(this.options.twoway && this.options.key) {
             if(this.options.number) {
-                val = Number.parseInt(val);
-                if(Number.isNaN(val)) {
+                val = parseInt(val);
+                if(isNaN(val)) {
                     alert('Value must be an integer.');
                     return;
                 }    
