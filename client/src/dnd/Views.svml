@@ -1,13 +1,59 @@
 {
 import * as Models from './Models';
 import { AdminMode, Modal, Input, TextArea, SimpleHeader, AddText } from '../Components';
+
+function roll(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+}
+
+MainView2<Models.Main>[pad-small]
+  #title:h1 'test'
+  #t:TextArea({ key: 'test1' }) $data
+  #t2:TextArea({ key: 'test2' }) $data
+
 MainView<Models.Main>[pad-small]
-  #title:h1 'The Phandalin 5'
+  #title:h3 'The Phandalin 5'
   #toons:SyncList({ item: Toon })[row] $data.toons
+  #addEncounter:button 'Add Encounter'
+	.style { margin-top: 1em; }
+    onClick() {
+        this.data.encounters.setItem({
+            createdAt: new Date().toISOString(),
+            name: '', 
+            note: ''
+        });
+    }
+  #encounters:SyncList({ item: Encounter, sortField: 'createdAt', sortReversed: true  })[row] $data.encounters
+
 
 Toon<Models.Toon>[row-nofill]
-  .style { widht: 200px; border: 1px solid #777; }
+  .style { width: 200px; border: 1px solid #777; }
   #name:Input({ key: 'name' }) $data
+  #stats[col]
+    #initStat:Input({ key: 'init', label: 'Init' }) $data.stats
+  #roll[row]
+    #rollBtn:button[row-nofill] 'Init'
+        onClick() {
+            const val = roll(1, 20);
+            this.rollResult.innerHTML = val.toString();
+        }
+    #rollResult[row-fill]
   #note:TextArea({ key: 'note' }) $data
+    .style { height: 400px; }
+  
+
+Encounter<Models.Encounter>[row-nofill]
+  .style { width: 200px; border: 1px solid #777; }
+  #header[row]
+    #name:Input({ key: 'name' })[row-fill] $data
+		.style { width: auto; }
+    #delBtn:button[material-icons row-nofill] 'delete'
+		onClick() { if(confirm('Delete encounter?')) { this.data.parent.remove(this.data.key); } }
+  #note:TextArea({ key: 'note' }) $data
+    .style { height: 400px; }
+
+

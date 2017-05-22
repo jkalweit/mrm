@@ -14,7 +14,7 @@ const threads = sync.createChannel('threads', persistThreads.data);
 const mrm = sync.createChannel('mrm', persistMrm.data);
 const checklists = sync.createChannel('checklists', persistChecklists.data);
 const reload = sync.createChannel('reload');
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 13379);
 app.use('/', express.static(path.join(__dirname, './client/dist')));
 app.use('/', (req, res) => res.sendFile(path.join(__dirname, './client/dist/index.html')));
 syncnode_server_1.watch('./client/dist', reload); // For debugging, send a signal to reload the client when files change.
