@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,7 +73,7 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const syncnode_common_1 = __webpack_require__(4);
+const syncnode_common_1 = __webpack_require__(5);
 class SyncNodeLocal extends syncnode_common_1.SyncNode {
     constructor(id) {
         let data = JSON.parse(localStorage.getItem(id));
@@ -87,6 +87,8 @@ exports.SyncNodeLocal = SyncNodeLocal;
 class SyncNodeClient extends syncnode_common_1.SyncNodeEventEmitter {
     constructor() {
         super();
+        this.isSocketOpen = false;
+        this.queuedMessages = [];
         if (!('WebSocket' in window)) {
             throw new Error('SyncNode only works with browsers that support WebSockets');
         }
@@ -97,10 +99,20 @@ class SyncNodeClient extends syncnode_common_1.SyncNodeEventEmitter {
         //});
     }
     socketOnOpen(msg) {
+        this.isSocketOpen = true;
         console.log('connected!');
+        this.sendQueuedMessages();
         this.emit('open');
     }
+    sendQueuedMessages() {
+        while (this.queuedMessages.length) {
+            let msg = this.queuedMessages.shift();
+            if (msg)
+                this.send(msg);
+        }
+    }
     socketOnClosed(msg) {
+        this.isSocketOpen = false;
         console.log('Socket connection closed: ', msg);
         this.emit('closed');
         setTimeout(() => {
@@ -125,7 +137,12 @@ class SyncNodeClient extends syncnode_common_1.SyncNodeEventEmitter {
         this.emit('error', msg);
     }
     send(msg) {
-        this.socket.send(msg);
+        if (this.isSocketOpen) {
+            this.socket.send(msg);
+        }
+        else {
+            this.queuedMessages.push(msg);
+        }
     }
     tryConnect() {
         console.log('connecting...');
@@ -511,12 +528,18 @@ class SyncList extends SyncView {
                 this.emit('addingViewOptions', options);
                 //view = this.svml.buildComponent(this.options.ctor || this.options.tag, options, toInit);
                 view = new this.options.item(options);
+                view.init();
                 //toInit.forEach((v) => { v.init(); });
                 this.views[item.key] = view;
                 this.emit('viewAdded', view);
             }
-            // Attempt to preserve order:
-            this.el.insertBefore(view.el, previous ? previous.el.nextSibling : this.el.firstChild);
+            // Add view to container if necessarry, and attempt to preserve order:
+            if (previous && previous.el.nextSibling != view.el) {
+                this.el.insertBefore(view.el, previous.el.nextSibling);
+            }
+            else if (view.el.parentElement != this.el) {
+                this.el.insertBefore(view.el, this.el.firstChild);
+            }
             view.onAny((eventName, ...args) => {
                 args.unshift(view);
                 args.unshift(eventName);
@@ -551,142 +574,6 @@ exports.SyncAppSimple = SyncAppSimple;
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const syncnode_client_1 = __webpack_require__(0);
-const Components_1 = __webpack_require__(2);
-const ViewsEdit_1 = __webpack_require__(5);
-class MainView extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.checklists = this.addView(new Checklists(), 'row-nofill Checklists_checklists_style', undefined);
-        this.checklist = this.addView(new Checklist(), 'row-fill Checklist_checklist_style', undefined);
-        this.el.className += ' row pad-small';
-        this.el.className += ' MainView_style';
-        this.checklists.on('selected', (list) => {
-            console.log('list', list);
-            this.selectedChecklist = list;
-            this.bind();
-        });
-        this.addBinding('checklists', 'update', 'data');
-        this.addBinding('checklist', 'update', 'selectedChecklist');
-    }
-}
-exports.MainView = MainView;
-syncnode_client_1.SyncView.addGlobalStyle('.Checklists_checklists_style', ` width: 250px; `);
-syncnode_client_1.SyncView.addGlobalStyle('.Checklist_checklist_style', ` margin-left: 1em; `);
-class Checklists extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.addModal = this.addView(new Components_1.Modal({ view: ViewsEdit_1.NewChecklist }), '', undefined);
-        this.header = this.add('div', { "innerHTML": "", "className": "row div_header_style row" });
-        this.title = this.add('div', { "parent": "header", "innerHTML": "Checklists", "className": "row-fill bold row-fill bold" });
-        this.showModal = this.add('button', { "parent": "header", "innerHTML": "New Checklist", "className": "row-nofill row-nofill" });
-        this.checklists = this.addView(new syncnode_client_1.SyncList({ item: ChecklistListItem }), '', undefined);
-        this.el.className += ' ';
-        this.addBinding('addModal', 'update', 'data.checklists');
-        this.showModal.addEventListener('click', () => { this.addModal.show(); });
-        this.checklists.on('selected', (view, list) => {
-            this.emit('selected', list);
-        });
-        this.addBinding('checklists', 'update', 'data.checklists');
-    }
-}
-exports.Checklists = Checklists;
-syncnode_client_1.SyncView.addGlobalStyle('.div_header_style', ` margin-bottom: 1em; `);
-class Checklist extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.editModal = this.addView(new Components_1.Modal({ view: ViewsEdit_1.EditChecklist }), '', undefined);
-        this.header = this.add('div', { "innerHTML": "", "className": "row center-vert header-small row center-vert header-small" });
-        this.name = this.add('div', { "parent": "header", "innerHTML": "", "className": "row-fill bold row-fill bold" });
-        this.editList = this.add('button', { "parent": "header", "innerHTML": "Edit List", "className": "row-nofill row-nofill" });
-        this.resetList = this.add('button', { "parent": "header", "innerHTML": "Reset List", "className": "row-nofill row-nofill" });
-        this.groups = this.addView(new syncnode_client_1.SyncList({ item: Group }), ' SyncList_groups_style', undefined);
-        this.el.className += ' ';
-        this.el.className += ' Checklist_style';
-        this.addBinding('editModal', 'update', 'data');
-        this.addBinding('name', 'innerHTML', 'data.name');
-        this.editList.addEventListener('click', () => { this.editModal.show(); });
-        this.resetList.addEventListener('click', () => {
-            if (!confirm('Reset this checklist?'))
-                return;
-            let merge = {};
-            syncnode_client_1.SyncUtils.forEach(this.data.groups, (group) => {
-                let groupMerge = { items: {} };
-                merge[group.key] = groupMerge;
-                syncnode_client_1.SyncUtils.forEach(group.items, (item) => {
-                    groupMerge.items[item.key] = { completedAt: '' };
-                });
-            });
-            this.data.groups.merge(merge);
-        });
-        this.addBinding('groups', 'update', 'data.groups');
-    }
-    render() {
-        this.el.classList.toggle('hidden', !this.data);
-    }
-}
-exports.Checklist = Checklist;
-syncnode_client_1.SyncView.addGlobalStyle('.SyncList_groups_style', ` margin-left: 1em; `);
-class Group extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.header = this.add('div', { "innerHTML": "", "className": "row row" });
-        this.name = this.add('div', { "parent": "header", "innerHTML": "", "className": "row-fill bold center-vert header-small row-fill bold center-vert header-small" });
-        this.items = this.addView(new syncnode_client_1.SyncList({ item: Item }), ' SyncList_items_style', undefined);
-        this.el.className += ' ';
-        this.addBinding('name', 'innerHTML', 'data.name');
-        this.addBinding('items', 'update', 'data.items');
-    }
-}
-exports.Group = Group;
-syncnode_client_1.SyncView.addGlobalStyle('.SyncList_items_style', ` margin-left: 1em; `);
-class Item extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.name = this.add('div', { "innerHTML": "", "className": "center-vert center-vert" });
-        this.el.className += ' ';
-        this.el.className += ' Item_style';
-        this.el.addEventListener('click', this.onClick.bind(this));
-        this.addBinding('name', 'innerHTML', 'data.name');
-    }
-    onClick() {
-        this.data.set('completedAt', this.data.completedAt ? '' : new Date().toISOString());
-    }
-    render() {
-        this.name.style.textDecoration = this.data.completedAt ? 'line-through' : 'none';
-    }
-}
-exports.Item = Item;
-class ChecklistListItem extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.name = this.add('div', { "innerHTML": "", "className": "" });
-        this.el.className += ' ';
-        this.el.className += ' ChecklistListItem_style';
-        this.el.addEventListener('click', this.onClick.bind(this));
-        this.addBinding('name', 'innerHTML', 'data.name');
-    }
-    onClick() {
-        this.emit('selected', this.data);
-    }
-}
-exports.ChecklistListItem = ChecklistListItem;
-syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', ` max-width: 900px; margin: 1em auto; `);
-syncnode_client_1.SyncView.addGlobalStyle('.Checklist_style', ` max-width: 400px; `);
-syncnode_client_1.SyncView.addGlobalStyle('.Item_style', ` padding: 8px; border: 1px solid #777; `);
-syncnode_client_1.SyncView.addGlobalStyle('.ChecklistListItem_style', ` 
-    border: 1px solid #777;
-    padding: 8px;
-  `);
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -969,6 +856,142 @@ syncnode_client_1.SyncView.addGlobalStyle('.TabHeaderItem_style', ` border: 1px 
 
 
 /***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const syncnode_client_1 = __webpack_require__(0);
+const Components_1 = __webpack_require__(1);
+const ViewsEdit_1 = __webpack_require__(3);
+class MainView extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.checklists = this.addView(new Checklists(), 'row-nofill Checklists_checklists_style', undefined);
+        this.checklist = this.addView(new Checklist(), 'row-fill Checklist_checklist_style', undefined);
+        this.el.className += ' row pad-small';
+        this.el.className += ' MainView_style';
+        this.checklists.on('selected', (list) => {
+            console.log('list', list);
+            this.selectedChecklist = list;
+            this.bind();
+        });
+        this.addBinding('checklists', 'update', 'data');
+        this.addBinding('checklist', 'update', 'selectedChecklist');
+    }
+}
+exports.MainView = MainView;
+syncnode_client_1.SyncView.addGlobalStyle('.Checklists_checklists_style', ` width: 250px; `);
+syncnode_client_1.SyncView.addGlobalStyle('.Checklist_checklist_style', ` margin-left: 1em; `);
+class Checklists extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.addModal = this.addView(new Components_1.Modal({ view: ViewsEdit_1.NewChecklist }), '', undefined);
+        this.header = this.add('div', { "innerHTML": "", "className": "row div_header_style row" });
+        this.title = this.add('div', { "parent": "header", "innerHTML": "Checklists", "className": "row-fill bold row-fill bold" });
+        this.showModal = this.add('button', { "parent": "header", "innerHTML": "New Checklist", "className": "row-nofill row-nofill" });
+        this.checklists = this.addView(new syncnode_client_1.SyncList({ item: ChecklistListItem }), '', undefined);
+        this.el.className += ' ';
+        this.addBinding('addModal', 'update', 'data.checklists');
+        this.showModal.addEventListener('click', () => { this.addModal.show(); });
+        this.checklists.on('selected', (view, list) => {
+            this.emit('selected', list);
+        });
+        this.addBinding('checklists', 'update', 'data.checklists');
+    }
+}
+exports.Checklists = Checklists;
+syncnode_client_1.SyncView.addGlobalStyle('.div_header_style', ` margin-bottom: 1em; `);
+class Checklist extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.editModal = this.addView(new Components_1.Modal({ view: ViewsEdit_1.EditChecklist }), '', undefined);
+        this.header = this.add('div', { "innerHTML": "", "className": "row center-vert header-small row center-vert header-small" });
+        this.name = this.add('div', { "parent": "header", "innerHTML": "", "className": "row-fill bold row-fill bold" });
+        this.editList = this.add('button', { "parent": "header", "innerHTML": "Edit List", "className": "row-nofill row-nofill" });
+        this.resetList = this.add('button', { "parent": "header", "innerHTML": "Reset List", "className": "row-nofill row-nofill" });
+        this.groups = this.addView(new syncnode_client_1.SyncList({ item: Group }), ' SyncList_groups_style', undefined);
+        this.el.className += ' ';
+        this.el.className += ' Checklist_style';
+        this.addBinding('editModal', 'update', 'data');
+        this.addBinding('name', 'innerHTML', 'data.name');
+        this.editList.addEventListener('click', () => { this.editModal.show(); });
+        this.resetList.addEventListener('click', () => {
+            if (!confirm('Reset this checklist?'))
+                return;
+            let merge = {};
+            syncnode_client_1.SyncUtils.forEach(this.data.groups, (group) => {
+                let groupMerge = { items: {} };
+                merge[group.key] = groupMerge;
+                syncnode_client_1.SyncUtils.forEach(group.items, (item) => {
+                    groupMerge.items[item.key] = { completedAt: '' };
+                });
+            });
+            this.data.groups.merge(merge);
+        });
+        this.addBinding('groups', 'update', 'data.groups');
+    }
+    render() {
+        this.el.classList.toggle('hidden', !this.data);
+    }
+}
+exports.Checklist = Checklist;
+syncnode_client_1.SyncView.addGlobalStyle('.SyncList_groups_style', ` margin-left: 1em; `);
+class Group extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.header = this.add('div', { "innerHTML": "", "className": "row row" });
+        this.name = this.add('div', { "parent": "header", "innerHTML": "", "className": "row-fill bold center-vert header-small row-fill bold center-vert header-small" });
+        this.items = this.addView(new syncnode_client_1.SyncList({ item: Item }), ' SyncList_items_style', undefined);
+        this.el.className += ' ';
+        this.addBinding('name', 'innerHTML', 'data.name');
+        this.addBinding('items', 'update', 'data.items');
+    }
+}
+exports.Group = Group;
+syncnode_client_1.SyncView.addGlobalStyle('.SyncList_items_style', ` margin-left: 1em; `);
+class Item extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.name = this.add('div', { "innerHTML": "", "className": "center-vert center-vert" });
+        this.el.className += ' ';
+        this.el.className += ' Item_style';
+        this.el.addEventListener('click', this.onClick.bind(this));
+        this.addBinding('name', 'innerHTML', 'data.name');
+    }
+    onClick() {
+        this.data.set('completedAt', this.data.completedAt ? '' : new Date().toISOString());
+    }
+    render() {
+        this.name.style.textDecoration = this.data.completedAt ? 'line-through' : 'none';
+    }
+}
+exports.Item = Item;
+class ChecklistListItem extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.name = this.add('div', { "innerHTML": "", "className": "" });
+        this.el.className += ' ';
+        this.el.className += ' ChecklistListItem_style';
+        this.el.addEventListener('click', this.onClick.bind(this));
+        this.addBinding('name', 'innerHTML', 'data.name');
+    }
+    onClick() {
+        this.emit('selected', this.data);
+    }
+}
+exports.ChecklistListItem = ChecklistListItem;
+syncnode_client_1.SyncView.addGlobalStyle('.MainView_style', ` max-width: 900px; margin: 1em auto; `);
+syncnode_client_1.SyncView.addGlobalStyle('.Checklist_style', ` max-width: 400px; `);
+syncnode_client_1.SyncView.addGlobalStyle('.Item_style', ` padding: 8px; border: 1px solid #777; `);
+syncnode_client_1.SyncView.addGlobalStyle('.ChecklistListItem_style', ` 
+    border: 1px solid #777;
+    padding: 8px;
+  `);
+
+
+/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -976,7 +999,124 @@ syncnode_client_1.SyncView.addGlobalStyle('.TabHeaderItem_style', ` border: 1px 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const syncnode_client_1 = __webpack_require__(0);
-const Views_1 = __webpack_require__(1);
+const Components_1 = __webpack_require__(1);
+class NewChecklist extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h2', { "innerHTML": "New Checklist", "className": "" });
+        this.textInput = this.addView(new Components_1.Input({ twoway: false }), 'col-nofill', undefined);
+        this.footer = this.add('div', { "innerHTML": "", "className": "col-fill div_footer_style col-fill" });
+        this.addBtn = this.add('button', { "parent": "footer", "innerHTML": "Create Checklist", "className": "" });
+        this.cancelBtn = this.add('button', { "parent": "footer", "innerHTML": "Cancel", "className": "" });
+        this.el.className += ' modal-inner col';
+        this.addBtn.addEventListener('click', () => {
+            let name = this.textInput.value().trim();
+            if (!name.length) {
+                alert('Name is required.');
+                return;
+            }
+            let item = {
+                name: name,
+                groups: {}
+            };
+            this.data.setItem(item);
+            this.textInput.clear();
+            this.emit('hide');
+        });
+        this.cancelBtn.addEventListener('click', () => { this.emit('hide'); });
+    }
+}
+exports.NewChecklist = NewChecklist;
+syncnode_client_1.SyncView.addGlobalStyle('.div_footer_style', ` margin: 1em 0; `);
+class EditChecklist extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.title = this.add('h2', { "innerHTML": "Edit Checklist", "className": "" });
+        this.textInput = this.addView(new Components_1.Input({ label: 'Checklist Name:', key: 'name' }), 'col-nofill Input_textInput_style', undefined);
+        this.groupsContainer = this.add('div', { "innerHTML": "", "className": " div_groupsContainer_style" });
+        this.groups = this.addView(new syncnode_client_1.SyncList({ item: Group }), '', this.groupsContainer);
+        this.addNew = this.add('div', { "parent": "groupsContainer", "innerHTML": "", "className": "row div_addNew_style row" });
+        this.titleAddgroup = this.add('div', { "parent": "addNew", "innerHTML": "Add Group:", "className": "row-nofill row-nofill" });
+        this.addGroup = this.addView(new Components_1.AddText(), 'row-fill', this.addNew);
+        this.footer = this.add('div', { "innerHTML": "", "className": "col-fill div_footer_style col-fill" });
+        this.deleteBtn = this.add('button', { "parent": "footer", "innerHTML": "Delete", "className": "" });
+        this.closeBtn = this.add('button', { "parent": "footer", "innerHTML": "Close", "className": "" });
+        this.el.className += ' modal-inner col';
+        this.addBinding('textInput', 'update', 'data');
+        this.addBinding('groups', 'update', 'data.groups');
+        this.addGroup.on('add', (text) => {
+            let group = {
+                name: text,
+                items: {}
+            };
+            this.data.groups.setItem(group);
+            this.addGroup.clear();
+        });
+        this.deleteBtn.addEventListener('click', () => {
+            if (confirm('Delete Checklist?')) {
+                this.data.parent.remove(this.data.key);
+                this.emit('hide');
+            }
+        });
+        this.closeBtn.addEventListener('click', () => { this.emit('hide'); });
+    }
+}
+exports.EditChecklist = EditChecklist;
+syncnode_client_1.SyncView.addGlobalStyle('.Input_textInput_style', ` background-color: #DDF; padding: 4px; `);
+syncnode_client_1.SyncView.addGlobalStyle('.div_groupsContainer_style', ` margin-left: 1em; margin-top: 1em; `);
+syncnode_client_1.SyncView.addGlobalStyle('.div_addNew_style', ` background-color: #DFF; padding: 4px; `);
+syncnode_client_1.SyncView.addGlobalStyle('.div_footer_style', ` margin: 1em 0; `);
+class Group extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.header = this.add('div', { "innerHTML": "", "className": "row div_header_style row" });
+        this.textInput = this.addView(new Components_1.Input({ label: 'Group:', key: 'name' }), 'col-nofill', this.header);
+        this.items = this.addView(new syncnode_client_1.SyncList({ item: Item }), ' SyncList_items_style', undefined);
+        this.addNew = this.add('div', { "innerHTML": "", "className": "row div_addNew_style2 row" });
+        this.titleAdd = this.add('div', { "parent": "addNew", "innerHTML": "Add Item:", "className": "row-nofill row-nofill" });
+        this.addItem = this.addView(new Components_1.AddText(), 'row-fill', this.addNew);
+        this.el.className += ' ';
+        this.addBinding('textInput', 'update', 'data');
+        this.addBinding('items', 'update', 'data.items');
+        this.addItem.on('add', (text) => {
+            let item = {
+                name: text
+            };
+            this.data.items.setItem(item);
+            this.addItem.clear();
+        });
+    }
+}
+exports.Group = Group;
+syncnode_client_1.SyncView.addGlobalStyle('.div_header_style', ` background-color: #DDF; padding: 4px; `);
+syncnode_client_1.SyncView.addGlobalStyle('.SyncList_items_style', ` margin-left: 1em; `);
+syncnode_client_1.SyncView.addGlobalStyle('.div_addNew_style2', ` margin-left: 1em; background-color: #FDF; padding: 4px; `);
+class Item extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.name = this.addView(new Components_1.Input({ key: 'name' }), 'row-fill', undefined);
+        this.deleteBtn = this.add('button', { "innerHTML": "delete", "className": "material-icons material-icons" });
+        this.el.className += ' row';
+        this.el.className += ' Item_style';
+        this.addBinding('name', 'update', 'data');
+        this.deleteBtn.addEventListener('click', () => {
+            this.data.parent.remove(this.data.key);
+        });
+    }
+}
+exports.Item = Item;
+syncnode_client_1.SyncView.addGlobalStyle('.Item_style', ` padding: 8px; border: 1px solid #777; `);
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const syncnode_client_1 = __webpack_require__(0);
+const Views_1 = __webpack_require__(2);
 let mainView = new Views_1.MainView();
 mainView.init();
 document.body.appendChild(mainView.el);
@@ -991,7 +1131,7 @@ channel.on('updated', () => {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1361,123 +1501,6 @@ class SyncNodeChannel extends SyncNodeEventEmitter {
     }
 }
 exports.SyncNodeChannel = SyncNodeChannel;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const syncnode_client_1 = __webpack_require__(0);
-const Components_1 = __webpack_require__(2);
-class NewChecklist extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h2', { "innerHTML": "New Checklist", "className": "" });
-        this.textInput = this.addView(new Components_1.Input({ twoway: false }), 'col-nofill', undefined);
-        this.footer = this.add('div', { "innerHTML": "", "className": "col-fill div_footer_style col-fill" });
-        this.addBtn = this.add('button', { "parent": "footer", "innerHTML": "Create Checklist", "className": "" });
-        this.cancelBtn = this.add('button', { "parent": "footer", "innerHTML": "Cancel", "className": "" });
-        this.el.className += ' modal-inner col';
-        this.addBtn.addEventListener('click', () => {
-            let name = this.textInput.value().trim();
-            if (!name.length) {
-                alert('Name is required.');
-                return;
-            }
-            let item = {
-                name: name,
-                groups: {}
-            };
-            this.data.setItem(item);
-            this.textInput.clear();
-            this.emit('hide');
-        });
-        this.cancelBtn.addEventListener('click', () => { this.emit('hide'); });
-    }
-}
-exports.NewChecklist = NewChecklist;
-syncnode_client_1.SyncView.addGlobalStyle('.div_footer_style', ` margin: 1em 0; `);
-class EditChecklist extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h2', { "innerHTML": "Edit Checklist", "className": "" });
-        this.textInput = this.addView(new Components_1.Input({ label: 'Checklist Name:', key: 'name' }), 'col-nofill Input_textInput_style', undefined);
-        this.groupsContainer = this.add('div', { "innerHTML": "", "className": " div_groupsContainer_style" });
-        this.groups = this.addView(new syncnode_client_1.SyncList({ item: Group }), '', this.groupsContainer);
-        this.addNew = this.add('div', { "parent": "groupsContainer", "innerHTML": "", "className": "row div_addNew_style row" });
-        this.titleAddgroup = this.add('div', { "parent": "addNew", "innerHTML": "Add Group:", "className": "row-nofill row-nofill" });
-        this.addGroup = this.addView(new Components_1.AddText(), 'row-fill', this.addNew);
-        this.footer = this.add('div', { "innerHTML": "", "className": "col-fill div_footer_style col-fill" });
-        this.deleteBtn = this.add('button', { "parent": "footer", "innerHTML": "Delete", "className": "" });
-        this.closeBtn = this.add('button', { "parent": "footer", "innerHTML": "Close", "className": "" });
-        this.el.className += ' modal-inner col';
-        this.addBinding('textInput', 'update', 'data');
-        this.addBinding('groups', 'update', 'data.groups');
-        this.addGroup.on('add', (text) => {
-            let group = {
-                name: text,
-                items: {}
-            };
-            this.data.groups.setItem(group);
-            this.addGroup.clear();
-        });
-        this.deleteBtn.addEventListener('click', () => {
-            if (confirm('Delete Checklist?')) {
-                this.data.parent.remove(this.data.key);
-                this.emit('hide');
-            }
-        });
-        this.closeBtn.addEventListener('click', () => { this.emit('hide'); });
-    }
-}
-exports.EditChecklist = EditChecklist;
-syncnode_client_1.SyncView.addGlobalStyle('.Input_textInput_style', ` background-color: #DDF; padding: 4px; `);
-syncnode_client_1.SyncView.addGlobalStyle('.div_groupsContainer_style', ` margin-left: 1em; margin-top: 1em; `);
-syncnode_client_1.SyncView.addGlobalStyle('.div_addNew_style', ` background-color: #DFF; padding: 4px; `);
-syncnode_client_1.SyncView.addGlobalStyle('.div_footer_style', ` margin: 1em 0; `);
-class Group extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.header = this.add('div', { "innerHTML": "", "className": "row div_header_style row" });
-        this.textInput = this.addView(new Components_1.Input({ label: 'Group:', key: 'name' }), 'col-nofill', this.header);
-        this.items = this.addView(new syncnode_client_1.SyncList({ item: Item }), ' SyncList_items_style', undefined);
-        this.addNew = this.add('div', { "innerHTML": "", "className": "row div_addNew_style2 row" });
-        this.titleAdd = this.add('div', { "parent": "addNew", "innerHTML": "Add Item:", "className": "row-nofill row-nofill" });
-        this.addItem = this.addView(new Components_1.AddText(), 'row-fill', this.addNew);
-        this.el.className += ' ';
-        this.addBinding('textInput', 'update', 'data');
-        this.addBinding('items', 'update', 'data.items');
-        this.addItem.on('add', (text) => {
-            let item = {
-                name: text
-            };
-            this.data.items.setItem(item);
-            this.addItem.clear();
-        });
-    }
-}
-exports.Group = Group;
-syncnode_client_1.SyncView.addGlobalStyle('.div_header_style', ` background-color: #DDF; padding: 4px; `);
-syncnode_client_1.SyncView.addGlobalStyle('.SyncList_items_style', ` margin-left: 1em; `);
-syncnode_client_1.SyncView.addGlobalStyle('.div_addNew_style2', ` margin-left: 1em; background-color: #FDF; padding: 4px; `);
-class Item extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.name = this.addView(new Components_1.Input({ key: 'name' }), 'row-fill', undefined);
-        this.deleteBtn = this.add('button', { "innerHTML": "delete", "className": "material-icons material-icons" });
-        this.el.className += ' row';
-        this.el.className += ' Item_style';
-        this.addBinding('name', 'update', 'data');
-        this.deleteBtn.addEventListener('click', () => {
-            this.data.parent.remove(this.data.key);
-        });
-    }
-}
-exports.Item = Item;
-syncnode_client_1.SyncView.addGlobalStyle('.Item_style', ` padding: 8px; border: 1px solid #777; `);
 
 
 /***/ })

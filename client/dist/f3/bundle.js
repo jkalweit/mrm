@@ -101,6 +101,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         __extends(SyncNodeClient, _super);
         function SyncNodeClient() {
             var _this = _super.call(this) || this;
+            _this.isSocketOpen = false;
+            _this.queuedMessages = [];
             if (!('WebSocket' in window)) {
                 throw new Error('SyncNode only works with browsers that support WebSockets');
             }
@@ -112,11 +114,21 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
             //});
         }
         SyncNodeClient.prototype.socketOnOpen = function (msg) {
+            this.isSocketOpen = true;
             console.log('connected!');
+            this.sendQueuedMessages();
             this.emit('open');
+        };
+        SyncNodeClient.prototype.sendQueuedMessages = function () {
+            while (this.queuedMessages.length) {
+                var msg = this.queuedMessages.shift();
+                if (msg)
+                    this.send(msg);
+            }
         };
         SyncNodeClient.prototype.socketOnClosed = function (msg) {
             var _this = this;
+            this.isSocketOpen = false;
             console.log('Socket connection closed: ', msg);
             this.emit('closed');
             setTimeout(function () {
@@ -141,7 +153,12 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
             this.emit('error', msg);
         };
         SyncNodeClient.prototype.send = function (msg) {
-            this.socket.send(msg);
+            if (this.isSocketOpen) {
+                this.socket.send(msg);
+            }
+            else {
+                this.queuedMessages.push(msg);
+            }
         };
         SyncNodeClient.prototype.tryConnect = function () {
             console.log('connecting...');
@@ -544,12 +561,18 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
                     _this.emit('addingViewOptions', options);
                     //view = this.svml.buildComponent(this.options.ctor || this.options.tag, options, toInit);
                     view = new _this.options.item(options);
+                    view.init();
                     //toInit.forEach((v) => { v.init(); });
                     _this.views[item.key] = view;
                     _this.emit('viewAdded', view);
                 }
-                // Attempt to preserve order:
-                _this.el.insertBefore(view.el, previous ? previous.el.nextSibling : _this.el.firstChild);
+                // Add view to container if necessarry, and attempt to preserve order:
+                if (previous && previous.el.nextSibling != view.el) {
+                    _this.el.insertBefore(view.el, previous.el.nextSibling);
+                }
+                else if (view.el.parentElement != _this.el) {
+                    _this.el.insertBefore(view.el, _this.el.firstChild);
+                }
                 view.onAny(function (eventName) {
                     var args = [];
                     for (var _i = 1; _i < arguments.length; _i++) {

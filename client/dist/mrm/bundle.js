@@ -87,6 +87,8 @@ exports.SyncNodeLocal = SyncNodeLocal;
 class SyncNodeClient extends syncnode_common_1.SyncNodeEventEmitter {
     constructor() {
         super();
+        this.isSocketOpen = false;
+        this.queuedMessages = [];
         if (!('WebSocket' in window)) {
             throw new Error('SyncNode only works with browsers that support WebSockets');
         }
@@ -97,10 +99,20 @@ class SyncNodeClient extends syncnode_common_1.SyncNodeEventEmitter {
         //});
     }
     socketOnOpen(msg) {
+        this.isSocketOpen = true;
         console.log('connected!');
+        this.sendQueuedMessages();
         this.emit('open');
     }
+    sendQueuedMessages() {
+        while (this.queuedMessages.length) {
+            let msg = this.queuedMessages.shift();
+            if (msg)
+                this.send(msg);
+        }
+    }
     socketOnClosed(msg) {
+        this.isSocketOpen = false;
         console.log('Socket connection closed: ', msg);
         this.emit('closed');
         setTimeout(() => {
@@ -125,7 +137,12 @@ class SyncNodeClient extends syncnode_common_1.SyncNodeEventEmitter {
         this.emit('error', msg);
     }
     send(msg) {
-        this.socket.send(msg);
+        if (this.isSocketOpen) {
+            this.socket.send(msg);
+        }
+        else {
+            this.queuedMessages.push(msg);
+        }
     }
     tryConnect() {
         console.log('connecting...');
@@ -511,12 +528,18 @@ class SyncList extends SyncView {
                 this.emit('addingViewOptions', options);
                 //view = this.svml.buildComponent(this.options.ctor || this.options.tag, options, toInit);
                 view = new this.options.item(options);
+                view.init();
                 //toInit.forEach((v) => { v.init(); });
                 this.views[item.key] = view;
                 this.emit('viewAdded', view);
             }
-            // Attempt to preserve order:
-            this.el.insertBefore(view.el, previous ? previous.el.nextSibling : this.el.firstChild);
+            // Add view to container if necessarry, and attempt to preserve order:
+            if (previous && previous.el.nextSibling != view.el) {
+                this.el.insertBefore(view.el, previous.el.nextSibling);
+            }
+            else if (view.el.parentElement != this.el) {
+                this.el.insertBefore(view.el, this.el.firstChild);
+            }
             view.onAny((eventName, ...args) => {
                 args.unshift(view);
                 args.unshift(eventName);
