@@ -1,41 +1,41 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
+/******/ 		if(installedModules[moduleId]) {
 /******/ 			return installedModules[moduleId].exports;
-
+/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
 /******/ 			l: false,
 /******/ 			exports: {}
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// identity function for calling harmony imports with the correct context
 /******/ 	__webpack_require__.i = function(value) { return value; };
-
+/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -46,7 +46,7 @@
 /******/ 			});
 /******/ 		}
 /******/ 	};
-
+/******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
 /******/ 	__webpack_require__.n = function(module) {
 /******/ 		var getter = module && module.__esModule ?
@@ -55,15 +55,15 @@
 /******/ 		__webpack_require__.d(getter, 'a', getter);
 /******/ 		return getter;
 /******/ 	};
-
+/******/
 /******/ 	// Object.prototype.hasOwnProperty.call
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,7 +73,7 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const syncnode_common_1 = __webpack_require__(3);
+const syncnode_common_1 = __webpack_require__(4);
 class SyncNodeLocal extends syncnode_common_1.SyncNode {
     constructor(id) {
         let data = JSON.parse(localStorage.getItem(id));
@@ -511,18 +511,12 @@ class SyncList extends SyncView {
                 this.emit('addingViewOptions', options);
                 //view = this.svml.buildComponent(this.options.ctor || this.options.tag, options, toInit);
                 view = new this.options.item(options);
-                view.init();
                 //toInit.forEach((v) => { v.init(); });
                 this.views[item.key] = view;
                 this.emit('viewAdded', view);
             }
-            // Add view to container if necessarry, and attempt to preserve order:
-            if (previous && previous.el.nextSibling != view.el) {
-                this.el.insertBefore(view.el, previous.el.nextSibling);
-            }
-            else if (view.el.parentElement != this.el) {
-                this.el.insertBefore(view.el, this.el.firstChild);
-            }
+            // Attempt to preserve order:
+            this.el.insertBefore(view.el, previous ? previous.el.nextSibling : this.el.firstChild);
             view.onAny((eventName, ...args) => {
                 args.unshift(view);
                 args.unshift(eventName);
@@ -569,22 +563,11 @@ function roll(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-class MainView2 extends syncnode_client_1.SyncView {
-    constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h1', { "innerHTML": "test", "className": "" });
-        this.t = this.addView(new Components_1.TextArea({ key: 'test1' }), '', undefined);
-        this.t2 = this.addView(new Components_1.TextArea({ key: 'test2' }), '', undefined);
-        this.el.className += ' pad-small';
-        this.addBinding('t', 'update', 'data');
-        this.addBinding('t2', 'update', 'data');
-    }
-}
-exports.MainView2 = MainView2;
 class MainView extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h3', { "innerHTML": "The Phandalin 5", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "The Shield of Phandalin", "className": "" });
+        this.rolls = this.addView(new Roll(), ' Roll_rolls_style', undefined);
         this.toons = this.addView(new syncnode_client_1.SyncList({ item: Toon }), 'row', undefined);
         this.addEncounter = this.add('button', { "innerHTML": "Add Encounter", "className": " button_addEncounter_style" });
         this.encounters = this.addView(new syncnode_client_1.SyncList({ item: Encounter, sortField: 'createdAt', sortReversed: true }), 'row', undefined);
@@ -601,30 +584,44 @@ class MainView extends syncnode_client_1.SyncView {
     }
 }
 exports.MainView = MainView;
+syncnode_client_1.SyncView.addGlobalStyle('.Roll_rolls_style', ` width: 300px; `);
 syncnode_client_1.SyncView.addGlobalStyle('.button_addEncounter_style', ` margin-top: 1em; `);
 class Toon extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.name = this.addView(new Components_1.Input({ key: 'name' }), '', undefined);
-        this.stats = this.add('div', { "innerHTML": "", "className": "col col" });
-        this.initStat = this.addView(new Components_1.Input({ key: 'init', label: 'Init' }), '', this.stats);
-        this.roll = this.add('div', { "innerHTML": "", "className": "row row" });
+        this.header = this.add('div', { "innerHTML": "", "className": "row col-nofill row col-nofill" });
+        this.name = this.addView(new Components_1.Input({ key: 'name' }), 'row-fill', this.header);
+        this.showStats = this.add('button', { "parent": "header", "innerHTML": "...", "className": "row-nofill row-nofill" });
+        this.stats = this.addView(new ToonStats(), 'col-nofill hidden', undefined);
+        this.roll = this.add('div', { "innerHTML": "", "className": "row col-nofill row col-nofill" });
         this.rollBtn = this.add('button', { "parent": "roll", "innerHTML": "Init", "className": "row-nofill row-nofill" });
         this.rollResult = this.add('div', { "parent": "roll", "innerHTML": "", "className": "row-fill row-fill" });
-        this.note = this.addView(new Components_1.TextArea({ key: 'note' }), ' TextArea_note_style', undefined);
-        this.el.className += ' row-nofill';
+        this.note = this.addView(new Components_1.TextArea({ key: 'note' }), 'col-fill', undefined);
+        this.el.className += ' row-nofill col';
         this.el.className += ' Toon_style';
         this.addBinding('name', 'update', 'data');
-        this.addBinding('initStat', 'update', 'data.stats');
+        this.showStats.addEventListener('click', () => { this.stats.el.classList.toggle('hidden'); });
+        this.addBinding('stats', 'update', 'data.stats');
         this.rollBtn.addEventListener('click', () => {
             const val = roll(1, 20);
-            this.rollResult.innerHTML = val.toString();
+            const finalVal = val + (this.data.stats.init || 0);
+            this.rollResult.innerHTML = val.toString() + ' + ' + (this.data.stats.init || 0) + ' = ' + finalVal;
         });
         this.addBinding('note', 'update', 'data');
     }
 }
 exports.Toon = Toon;
-syncnode_client_1.SyncView.addGlobalStyle('.TextArea_note_style', ` height: 400px; `);
+class ToonStats extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.initStat = this.addView(new Components_1.Input({ key: 'init', label: 'Init', number: true }), '', undefined);
+        this.strStat = this.addView(new Components_1.Input({ key: 'strength', label: 'Strength', number: true }), '', undefined);
+        this.el.className += ' ';
+        this.addBinding('initStat', 'update', 'data');
+        this.addBinding('strStat', 'update', 'data');
+    }
+}
+exports.ToonStats = ToonStats;
 class Encounter extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
@@ -644,6 +641,40 @@ class Encounter extends syncnode_client_1.SyncView {
 exports.Encounter = Encounter;
 syncnode_client_1.SyncView.addGlobalStyle('.Input_name_style', ` width: auto; `);
 syncnode_client_1.SyncView.addGlobalStyle('.TextArea_note_style', ` height: 400px; `);
+class Roll extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.roll20 = this.addView(new RollBtn({ label: 'Roll 20', max: 20 }), '', undefined);
+        this.roll12 = this.addView(new RollBtn({ label: 'Roll 12', max: 12 }), '', undefined);
+        this.roll10 = this.addView(new RollBtn({ label: 'Roll 10', max: 10 }), '', undefined);
+        this.roll8 = this.addView(new RollBtn({ label: 'Roll 8', max: 8 }), '', undefined);
+        this.roll6 = this.addView(new RollBtn({ label: 'Roll 6', max: 6 }), '', undefined);
+        this.roll4 = this.addView(new RollBtn({ label: 'Roll 4', max: 4 }), '', undefined);
+        this.el.className += ' col';
+    }
+}
+exports.Roll = Roll;
+class RollBtn extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({ label: 'Roll', min: 1, max: 20 }, options));
+        this.rollBtn = this.add('button', { "innerHTML": "", "className": "row-nofill row-nofill" });
+        this.rollRes = this.add('span', { "innerHTML": "", "className": "row-fill span_rollRes_style row-fill" });
+        this.clearBtn = this.add('button', { "innerHTML": "x", "className": "row-nofill row-nofill" });
+        this.el.className += ' row border';
+        this.rollBtn.addEventListener('click', () => {
+            const val = roll(this.options.min, this.options.max);
+            this.rollRes.innerHTML = val.toString() + ', ' + this.rollRes.innerHTML;
+        });
+        this.clearBtn.addEventListener('click', () => { this.rollRes.innerHTML = ''; });
+    }
+    init() {
+        this.rollBtn.innerHTML = this.options.label;
+    }
+}
+exports.RollBtn = RollBtn;
+syncnode_client_1.SyncView.addGlobalStyle('.span_rollRes_style', ` 
+      overflow-x: auto;
+    `);
 syncnode_client_1.SyncView.addGlobalStyle('.Toon_style', ` width: 200px; border: 1px solid #777; `);
 syncnode_client_1.SyncView.addGlobalStyle('.Encounter_style', ` width: 200px; border: 1px solid #777; `);
 
@@ -658,15 +689,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const syncnode_client_1 = __webpack_require__(0);
 class Input extends syncnode_client_1.SyncView {
     constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', textarea: false }, options));
-        this.label = this.add('span', { "innerHTML": "", "className": " span_label_style" });
-        this.el.className += ' ';
+        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', number: false }, options));
+        this.label = this.add('span', { "innerHTML": "", "className": "row-nofill span_label_style row-nofill" });
+        this.input = this.add('input', { "innerHTML": "", "className": "row-fill input_input_style row-fill" });
+        this.el.className += ' row';
         this.el.className += ' Input_style';
         this.el.addEventListener('change', this.onChange.bind(this));
     }
     onChange() {
         let val = this.input.value;
         if (this.options.twoway && this.options.key) {
+            if (this.options.number) {
+                val = Number.parseInt(val);
+                if (Number.isNaN(val)) {
+                    alert('Value must be an integer.');
+                    return;
+                }
+            }
             this.data.set(this.options.key, val);
         }
         this.emit('change', val);
@@ -678,30 +717,12 @@ class Input extends syncnode_client_1.SyncView {
         this.input.value = '';
     }
     init() {
-        this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
-        syncnode_client_1.SyncUtils.mergeMap(this.input.style, {
-            flex: '1 1 auto',
-            fontSize: '1em',
-            padding: '0.5em 0',
-            backgroundColor: 'transparent',
-            border: 'none'
-        });
-        if (this.options.textarea) {
-            this.el.style.border = '1px solid rgba(0,0,0,0.25)';
-            this.el.style.padding = '4px';
-        }
-        else {
-            this.el.style.borderBottom = '1px solid rgba(0,0,0,0.25)';
-        }
-        this.el.appendChild(this.input);
-        syncnode_client_1.SyncUtils.mergeMap(this.label.style, {
-            flex: '0 0 auto',
-            width: this.options.labelWidth || ''
-        });
         if (this.options.label) {
             this.label.innerHTML = this.options.label;
         }
         this.label.style.display = this.options.label ? 'flex' : 'none';
+        if (this.options.labelWidth)
+            this.label.style.width = this.options.labelWidth;
     }
     render() {
         if (this.data) {
@@ -717,6 +738,13 @@ syncnode_client_1.SyncView.addGlobalStyle('.span_label_style', `
             display: flex;
             flex-direction: column;
             justify-content: center;
+        `);
+syncnode_client_1.SyncView.addGlobalStyle('.input_input_style', ` 
+            font-size: 1em; 
+            padding: 0.5em 0;  
+            background-color: transparent;
+            border: none;
+            border-bottom = 1px solid rgba(0,0,0,0.25);
         `);
 class TextArea extends syncnode_client_1.SyncView {
     constructor(options = {}) {
@@ -937,6 +965,28 @@ syncnode_client_1.SyncView.addGlobalStyle('.TabHeaderItem_style', ` border: 1px 
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const syncnode_client_1 = __webpack_require__(0);
+const Views_1 = __webpack_require__(1);
+let mainView = new Views_1.MainView();
+mainView.init();
+document.body.appendChild(mainView.el);
+let client = new syncnode_client_1.SyncNodeClient();
+let reload = client.subscribe('reload');
+reload.on('reload', () => window.location.reload());
+let channel = client.subscribe('checklists');
+channel.on('updated', () => {
+    console.log('updated: ', channel.data);
+    mainView.update(channel.data);
+});
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1306,28 +1356,6 @@ class SyncNodeChannel extends SyncNodeEventEmitter {
     }
 }
 exports.SyncNodeChannel = SyncNodeChannel;
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const syncnode_client_1 = __webpack_require__(0);
-const Views_1 = __webpack_require__(1);
-let mainView = new Views_1.MainView();
-mainView.init();
-document.body.appendChild(mainView.el);
-let client = new syncnode_client_1.SyncNodeClient();
-let reload = client.subscribe('reload');
-reload.on('reload', () => window.location.reload());
-let channel = client.subscribe('checklists');
-channel.on('updated', () => {
-    console.log('updated: ', channel.data);
-    mainView.update(channel.data);
-});
 
 
 /***/ })

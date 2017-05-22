@@ -2,19 +2,24 @@ import { SyncNode } from "syncnode-common";
 import { SyncView, SyncList, SyncUtils } from "syncnode-client";
 
 export class Input extends SyncView<SyncNode> {
-
-        input: HTMLInputElement | HTMLTextAreaElement;
-    
- 	label = this.add('span', {"innerHTML":"","className":" span_label_style"});
+	label = this.add('span', {"innerHTML":"","className":"row-nofill span_label_style row-nofill"});
+	input = this.add('input', {"innerHTML":"","className":"row-fill input_input_style row-fill"});
 	constructor(options: any = {}) {
-		super(SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', textarea: false }, options));
-		this.el.className += ' ';
+		super(SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', number: false }, options));
+		this.el.className += ' row';
 		this.el.className += ' Input_style';
 		this.el.addEventListener('change', this.onChange.bind(this));
 	}
 	onChange() { 
-        let val = this.input.value;
+        let val: string | number = this.input.value;
         if(this.options.twoway && this.options.key) {
+            if(this.options.number) {
+                val = Number.parseInt(val);
+                if(Number.isNaN(val)) {
+                    alert('Value must be an integer.');
+                    return;
+                }    
+            }
             this.data.set(this.options.key, val);
         }
         this.emit('change', val); 
@@ -26,32 +31,11 @@ export class Input extends SyncView<SyncNode> {
         this.input.value = '';
     }
 	init() {
-        this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
-        SyncUtils.mergeMap(this.input.style, {
-            flex: '1 1 auto',
-            fontSize: '1em',
-            padding: '0.5em 0',
-            backgroundColor: 'transparent',
-            border: 'none'
-        });
-        if(this.options.textarea) {
-            this.el.style.border = '1px solid rgba(0,0,0,0.25)';
-            this.el.style.padding = '4px';
-        } else {
-            this.el.style.borderBottom = '1px solid rgba(0,0,0,0.25)';
-        }
-
-        this.el.appendChild(this.input);
-
-        SyncUtils.mergeMap(this.label.style, {
-            flex: '0 0 auto',
-            width: this.options.labelWidth || ''
-        });
-	
         if(this.options.label) {
             this.label.innerHTML = this.options.label;
         }
         this.label.style.display = this.options.label ? 'flex' : 'none';
+        if(this.options.labelWidth) this.label.style.width = this.options.labelWidth;
     }
 	render() {		
         if(this.data) {
@@ -68,6 +52,13 @@ SyncView.addGlobalStyle('.span_label_style', `
             display: flex;
             flex-direction: column;
             justify-content: center;
+        `);
+SyncView.addGlobalStyle('.input_input_style', ` 
+            font-size: 1em; 
+            padding: 0.5em 0;  
+            background-color: transparent;
+            border: none;
+            border-bottom = 1px solid rgba(0,0,0,0.25);
         `);
 export class TextArea extends SyncView<SyncNode> {
 	constructor(options: any = {}) {
@@ -95,10 +86,10 @@ export class TextArea extends SyncView<SyncNode> {
     }
 	autoresize() {
         var scrollLeft = window.pageXOffset ||
-            (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+            ((document.documentElement || document.body.parentNode || document.body) as any).scrollLeft;
 
         var scrollTop  = window.pageYOffset || 
-            (document.documentElement || document.body.parentNode || document.body).scrollTop;
+            ((document.documentElement || document.body.parentNode || document.body) as any).scrollTop;
 
         this.el.style.minHeight = 'auto';
         this.el.style.minHeight = this.el.scrollHeight + 10 + 'px';
