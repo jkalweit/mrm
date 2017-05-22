@@ -1,13 +1,83 @@
 {
 import * as Models from './Models';
 import { AdminMode, Modal, Input, TextArea, SimpleHeader, AddText } from '../Components';
+
+function roll(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 }
 
 MainView<Models.Main>[pad-small]
-  #title:h1 'The Phandalin 5'
+  #title:h3 'The Shield of Phandalin'
+  #rolls:Roll
+    .style { width: 300px; }
   #toons:SyncList({ item: Toon })[row] $data.toons
+  #addEncounter:button 'Add Encounter'
+	.style { margin-top: 1em; }
+    onClick() {
+        this.data.encounters.setItem({
+            createdAt: new Date().toISOString(),
+            name: '', 
+            note: ''
+        });
+    }
+  #encounters:SyncList({ item: Encounter, sortField: 'createdAt', sortReversed: true  })[row] $data.encounters
 
-Toon<Models.Toon>[row-nofill]
-  .style { widht: 200px; border: 1px solid #777; }
-  #name:Input({ key: 'name' }) $data
+
+Toon<Models.Toon>[row-nofill col]
+  .style { width: 200px; border: 1px solid #777; }
+  #header[row col-nofill]
+    #name:Input({ key: 'name' })[row-fill] $data
+    #showStats:button[row-nofill] '...' 
+      onClick() { this.stats.el.classList.toggle('hidden'); }
+  #stats:ToonStats[col-nofill hidden] $data.stats
+  #roll[row col-nofill]
+    #rollBtn:button[row-nofill] 'Init'
+        onClick() {
+            const val = roll(1, 20);
+            const finalVal = val + (this.data.stats.init || 0);
+            this.rollResult.innerHTML = val.toString() + ' + ' + (this.data.stats.init || 0) + ' = ' + finalVal;
+        }
+    #rollResult[row-fill]
+  #note:TextArea({ key: 'note' })[col-fill] $data
+
+ToonStats<Models.ToonStats>
+  #initStat:Input({ key: 'init', label: 'Init', number: true }) $data
+  #strStat:Input({ key: 'strength', label: 'Strength', number: true }) $data
+
+Encounter<Models.Encounter>[row-nofill]
+  .style { width: 200px; border: 1px solid #777; }
+  #header[row]
+    #name:Input({ key: 'name' })[row-fill] $data
+		.style { width: auto; }
+    #delBtn:button[material-icons row-nofill] 'delete'
+		onClick() { if(confirm('Delete encounter?')) { this.data.parent.remove(this.data.key); } }
   #note:TextArea({ key: 'note' }) $data
+    .style { height: 400px; }
+
+
+Roll[col]
+  #roll20:RollBtn({ label: 'Roll 20', max: 20 })
+  #roll12:RollBtn({ label: 'Roll 12', max: 12 })
+  #roll10:RollBtn({ label: 'Roll 10', max: 10 })
+  #roll8:RollBtn({ label: 'Roll 8', max: 8 })
+  #roll6:RollBtn({ label: 'Roll 6', max: 6 })
+  #roll4:RollBtn({ label: 'Roll 4', max: 4 })
+
+RollBtn({ label: 'Roll', min: 1, max: 20 })[row border]
+  #rollBtn:button[row-nofill]
+    onClick() {
+      const val = roll(this.options.min, this.options.max);
+      this.rollRes.innerHTML = val.toString() + ', ' + this.rollRes.innerHTML;
+    }
+  #rollRes:span[row-fill]
+    .style { 
+      overflow-x: auto;
+    }
+  #clearBtn:button[row-nofill] 'x'
+    onClick() { this.rollRes.innerHTML = ''; }
+  init() {
+    this.rollBtn.innerHTML = this.options.label;
+  }

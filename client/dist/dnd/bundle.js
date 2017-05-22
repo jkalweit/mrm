@@ -581,29 +581,125 @@ exports.SyncAppSimple = SyncAppSimple;
 Object.defineProperty(exports, "__esModule", { value: true });
 const syncnode_client_1 = __webpack_require__(0);
 const Components_1 = __webpack_require__(2);
+function roll(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 class MainView extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.title = this.add('h1', { "innerHTML": "The Phandalin 5", "className": "" });
+        this.title = this.add('h3', { "innerHTML": "The Shield of Phandalin", "className": "" });
+        this.rolls = this.addView(new Roll(), ' Roll_rolls_style', undefined);
         this.toons = this.addView(new syncnode_client_1.SyncList({ item: Toon }), 'row', undefined);
+        this.addEncounter = this.add('button', { "innerHTML": "Add Encounter", "className": " button_addEncounter_style" });
+        this.encounters = this.addView(new syncnode_client_1.SyncList({ item: Encounter, sortField: 'createdAt', sortReversed: true }), 'row', undefined);
         this.el.className += ' pad-small';
         this.addBinding('toons', 'update', 'data.toons');
+        this.addEncounter.addEventListener('click', () => {
+            this.data.encounters.setItem({
+                createdAt: new Date().toISOString(),
+                name: '',
+                note: ''
+            });
+        });
+        this.addBinding('encounters', 'update', 'data.encounters');
     }
 }
 exports.MainView = MainView;
+syncnode_client_1.SyncView.addGlobalStyle('.Roll_rolls_style', ` width: 300px; `);
+syncnode_client_1.SyncView.addGlobalStyle('.button_addEncounter_style', ` margin-top: 1em; `);
 class Toon extends syncnode_client_1.SyncView {
     constructor(options = {}) {
         super(syncnode_client_1.SyncUtils.mergeMap({}, options));
-        this.name = this.addView(new Components_1.Input({ key: 'name' }), '', undefined);
-        this.note = this.addView(new Components_1.TextArea({ key: 'note' }), '', undefined);
-        this.el.className += ' row-nofill';
+        this.header = this.add('div', { "innerHTML": "", "className": "row col-nofill row col-nofill" });
+        this.name = this.addView(new Components_1.Input({ key: 'name' }), 'row-fill', this.header);
+        this.showStats = this.add('button', { "parent": "header", "innerHTML": "...", "className": "row-nofill row-nofill" });
+        this.stats = this.addView(new ToonStats(), 'col-nofill hidden', undefined);
+        this.roll = this.add('div', { "innerHTML": "", "className": "row col-nofill row col-nofill" });
+        this.rollBtn = this.add('button', { "parent": "roll", "innerHTML": "Init", "className": "row-nofill row-nofill" });
+        this.rollResult = this.add('div', { "parent": "roll", "innerHTML": "", "className": "row-fill row-fill" });
+        this.note = this.addView(new Components_1.TextArea({ key: 'note' }), 'col-fill', undefined);
+        this.el.className += ' row-nofill col';
         this.el.className += ' Toon_style';
         this.addBinding('name', 'update', 'data');
+        this.showStats.addEventListener('click', () => { this.stats.el.classList.toggle('hidden'); });
+        this.addBinding('stats', 'update', 'data.stats');
+        this.rollBtn.addEventListener('click', () => {
+            const val = roll(1, 20);
+            const finalVal = val + (this.data.stats.init || 0);
+            this.rollResult.innerHTML = val.toString() + ' + ' + (this.data.stats.init || 0) + ' = ' + finalVal;
+        });
         this.addBinding('note', 'update', 'data');
     }
 }
 exports.Toon = Toon;
-syncnode_client_1.SyncView.addGlobalStyle('.Toon_style', ` widht: 200px; border: 1px solid #777; `);
+class ToonStats extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.initStat = this.addView(new Components_1.Input({ key: 'init', label: 'Init', number: true }), '', undefined);
+        this.strStat = this.addView(new Components_1.Input({ key: 'strength', label: 'Strength', number: true }), '', undefined);
+        this.el.className += ' ';
+        this.addBinding('initStat', 'update', 'data');
+        this.addBinding('strStat', 'update', 'data');
+    }
+}
+exports.ToonStats = ToonStats;
+class Encounter extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.header = this.add('div', { "innerHTML": "", "className": "row row" });
+        this.name = this.addView(new Components_1.Input({ key: 'name' }), 'row-fill Input_name_style', this.header);
+        this.delBtn = this.add('button', { "parent": "header", "innerHTML": "delete", "className": "material-icons row-nofill material-icons row-nofill" });
+        this.note = this.addView(new Components_1.TextArea({ key: 'note' }), ' TextArea_note_style', undefined);
+        this.el.className += ' row-nofill';
+        this.el.className += ' Encounter_style';
+        this.addBinding('name', 'update', 'data');
+        this.delBtn.addEventListener('click', () => { if (confirm('Delete encounter?')) {
+            this.data.parent.remove(this.data.key);
+        } });
+        this.addBinding('note', 'update', 'data');
+    }
+}
+exports.Encounter = Encounter;
+syncnode_client_1.SyncView.addGlobalStyle('.Input_name_style', ` width: auto; `);
+syncnode_client_1.SyncView.addGlobalStyle('.TextArea_note_style', ` height: 400px; `);
+class Roll extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({}, options));
+        this.roll20 = this.addView(new RollBtn({ label: 'Roll 20', max: 20 }), '', undefined);
+        this.roll12 = this.addView(new RollBtn({ label: 'Roll 12', max: 12 }), '', undefined);
+        this.roll10 = this.addView(new RollBtn({ label: 'Roll 10', max: 10 }), '', undefined);
+        this.roll8 = this.addView(new RollBtn({ label: 'Roll 8', max: 8 }), '', undefined);
+        this.roll6 = this.addView(new RollBtn({ label: 'Roll 6', max: 6 }), '', undefined);
+        this.roll4 = this.addView(new RollBtn({ label: 'Roll 4', max: 4 }), '', undefined);
+        this.el.className += ' col';
+    }
+}
+exports.Roll = Roll;
+class RollBtn extends syncnode_client_1.SyncView {
+    constructor(options = {}) {
+        super(syncnode_client_1.SyncUtils.mergeMap({ label: 'Roll', min: 1, max: 20 }, options));
+        this.rollBtn = this.add('button', { "innerHTML": "", "className": "row-nofill row-nofill" });
+        this.rollRes = this.add('span', { "innerHTML": "", "className": "row-fill span_rollRes_style row-fill" });
+        this.clearBtn = this.add('button', { "innerHTML": "x", "className": "row-nofill row-nofill" });
+        this.el.className += ' row border';
+        this.rollBtn.addEventListener('click', () => {
+            const val = roll(this.options.min, this.options.max);
+            this.rollRes.innerHTML = val.toString() + ', ' + this.rollRes.innerHTML;
+        });
+        this.clearBtn.addEventListener('click', () => { this.rollRes.innerHTML = ''; });
+    }
+    init() {
+        this.rollBtn.innerHTML = this.options.label;
+    }
+}
+exports.RollBtn = RollBtn;
+syncnode_client_1.SyncView.addGlobalStyle('.span_rollRes_style', ` 
+      overflow-x: auto;
+    `);
+syncnode_client_1.SyncView.addGlobalStyle('.Toon_style', ` width: 200px; border: 1px solid #777; `);
+syncnode_client_1.SyncView.addGlobalStyle('.Encounter_style', ` width: 200px; border: 1px solid #777; `);
 
 
 /***/ }),
@@ -616,15 +712,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const syncnode_client_1 = __webpack_require__(0);
 class Input extends syncnode_client_1.SyncView {
     constructor(options = {}) {
-        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', textarea: false }, options));
-        this.label = this.add('span', { "innerHTML": "", "className": " span_label_style" });
-        this.el.className += ' ';
+        super(syncnode_client_1.SyncUtils.mergeMap({ twoway: true, labelWidth: '100px', number: false }, options));
+        this.label = this.add('span', { "innerHTML": "", "className": "row-nofill span_label_style row-nofill" });
+        this.input = this.add('input', { "innerHTML": "", "className": "row-fill input_input_style row-fill" });
+        this.el.className += ' row';
         this.el.className += ' Input_style';
         this.el.addEventListener('change', this.onChange.bind(this));
     }
     onChange() {
         let val = this.input.value;
         if (this.options.twoway && this.options.key) {
+            if (this.options.number) {
+                val = Number.parseInt(val);
+                if (Number.isNaN(val)) {
+                    alert('Value must be an integer.');
+                    return;
+                }
+            }
             this.data.set(this.options.key, val);
         }
         this.emit('change', val);
@@ -636,27 +740,12 @@ class Input extends syncnode_client_1.SyncView {
         this.input.value = '';
     }
     init() {
-        this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
-        syncnode_client_1.SyncUtils.mergeMap(this.input.style, {
-            flex: 1,
-            fontSize: '1em',
-            padding: '0.5em 0',
-            backgroundColor: 'transparent',
-            border: 'none'
-        });
-        if (this.options.textarea) {
-            this.el.style.border = '1px solid rgba(0,0,0,0.25)';
-            this.el.style.padding = '4px';
-        }
-        else {
-            this.el.style.borderBottom = '1px solid rgba(0,0,0,0.25)';
-        }
-        this.el.appendChild(this.input);
-        this.label.style.width = this.options.labelWidth;
         if (this.options.label) {
             this.label.innerHTML = this.options.label;
         }
         this.label.style.display = this.options.label ? 'flex' : 'none';
+        if (this.options.labelWidth)
+            this.label.style.width = this.options.labelWidth;
     }
     render() {
         if (this.data) {
@@ -672,6 +761,13 @@ syncnode_client_1.SyncView.addGlobalStyle('.span_label_style', `
             display: flex;
             flex-direction: column;
             justify-content: center;
+        `);
+syncnode_client_1.SyncView.addGlobalStyle('.input_input_style', ` 
+            font-size: 1em; 
+            padding: 0.5em 0;  
+            background-color: transparent;
+            border: none;
+            border-bottom = 1px solid rgba(0,0,0,0.25);
         `);
 class TextArea extends syncnode_client_1.SyncView {
     constructor(options = {}) {
@@ -866,8 +962,9 @@ class AdminMode extends syncnode_client_1.SyncView {
 }
 exports.AdminMode = AdminMode;
 syncnode_client_1.SyncView.addGlobalStyle('.Input_style', ` 
-        width: 100%;
         display: flex; 
+        flex-direction: row;
+        width: 100%;
     `);
 syncnode_client_1.SyncView.addGlobalStyle('.TextArea_style', ` 
         width: 100%;

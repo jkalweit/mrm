@@ -604,7 +604,7 @@ class Input extends syncnode_client_1.SyncView {
     init() {
         this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
         syncnode_client_1.SyncUtils.mergeMap(this.input.style, {
-            flex: 1,
+            flex: '1 1 auto',
             fontSize: '1em',
             padding: '0.5em 0',
             backgroundColor: 'transparent',
@@ -618,7 +618,10 @@ class Input extends syncnode_client_1.SyncView {
             this.el.style.borderBottom = '1px solid rgba(0,0,0,0.25)';
         }
         this.el.appendChild(this.input);
-        this.label.style.width = this.options.labelWidth;
+        syncnode_client_1.SyncUtils.mergeMap(this.label.style, {
+            flex: '0 0 auto',
+            width: this.options.labelWidth || ''
+        });
         if (this.options.label) {
             this.label.innerHTML = this.options.label;
         }
@@ -832,8 +835,9 @@ class AdminMode extends syncnode_client_1.SyncView {
 }
 exports.AdminMode = AdminMode;
 syncnode_client_1.SyncView.addGlobalStyle('.Input_style', ` 
-        width: 100%;
         display: flex; 
+        flex-direction: row;
+        width: 100%;
     `);
 syncnode_client_1.SyncView.addGlobalStyle('.TextArea_style', ` 
         width: 100%;

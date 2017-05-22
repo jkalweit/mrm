@@ -1,21 +1,34 @@
 
-Input({ twoway: true, labelWidth: '100px', textarea: false })
-    @{
-        input: HTMLInputElement | HTMLTextAreaElement;
-    }
+Input({ twoway: true, labelWidth: '100px', number: false })[row]
     .style { 
-        width: 100%;
         display: flex; 
+        flex-direction: row;
+        width: 100%;
     }
-    #label:span
+    #label:span[row-nofill]
         .style {
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
+    #input:input[row-fill]
+        .style { 
+            font-size: 1em; 
+            padding: 0.5em 0;  
+            background-color: transparent;
+            border: none;
+            border-bottom = 1px solid rgba(0,0,0,0.25);
+        }
 	onChange() { 
-        let val = this.input.value;
+        let val: string | number = this.input.value;
         if(this.options.twoway && this.options.key) {
+            if(this.options.number) {
+                val = Number.parseInt(val);
+                if(Number.isNaN(val)) {
+                    alert('Value must be an integer.');
+                    return;
+                }    
+            }
             this.data.set(this.options.key, val);
         }
         this.emit('change', val); 
@@ -27,28 +40,11 @@ Input({ twoway: true, labelWidth: '100px', textarea: false })
         this.input.value = '';
     }
     init() {
-        this.input = document.createElement(this.options.textarea ? 'textarea' : 'input');
-        SyncUtils.mergeMap(this.input.style, {
-            flex: 1,
-            fontSize: '1em',
-            padding: '0.5em 0',
-            backgroundColor: 'transparent',
-            border: 'none'
-        });
-        if(this.options.textarea) {
-            this.el.style.border = '1px solid rgba(0,0,0,0.25)';
-            this.el.style.padding = '4px';
-        } else {
-            this.el.style.borderBottom = '1px solid rgba(0,0,0,0.25)';
-        }
-
-        this.el.appendChild(this.input);
-
-        this.label.style.width = this.options.labelWidth;
         if(this.options.label) {
             this.label.innerHTML = this.options.label;
         }
         this.label.style.display = this.options.label ? 'flex' : 'none';
+        if(this.options.labelWidth) this.label.style.width = this.options.labelWidth;
     }
     render() {		
         if(this.data) {
@@ -87,10 +83,10 @@ TextArea({ tag: 'textarea', twoway: true, labelWidth: '100px' })
     }
     autoresize() {
         var scrollLeft = window.pageXOffset ||
-            (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+            ((document.documentElement || document.body.parentNode || document.body) as any).scrollLeft;
 
         var scrollTop  = window.pageYOffset || 
-            (document.documentElement || document.body.parentNode || document.body).scrollTop;
+            ((document.documentElement || document.body.parentNode || document.body) as any).scrollTop;
 
         this.el.style.minHeight = 'auto';
         this.el.style.minHeight = this.el.scrollHeight + 10 + 'px';
