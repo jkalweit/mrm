@@ -11,7 +11,7 @@ let client = new SyncNodeClient();
 let reload = client.subscribe('reload');
 reload.on('reload', () => window.location.reload());
 
-let channel = client.subscribe('checklists');
+let channel = client.subscribe('dnd');
 channel.on('updated', () => {
     console.log('updated: ', channel.data);
     mainView.update(channel.data as Models.Main);

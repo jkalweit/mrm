@@ -1,41 +1,41 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-/******/
+
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-/******/
+
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
+/******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-/******/ 		}
+
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
 /******/ 			l: false,
 /******/ 			exports: {}
 /******/ 		};
-/******/
+
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
+
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
-/******/
+
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
-/******/
+
+
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-/******/
+
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-/******/
+
 /******/ 	// identity function for calling harmony imports with the correct context
 /******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
+
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -46,7 +46,7 @@
 /******/ 			});
 /******/ 		}
 /******/ 	};
-/******/
+
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
 /******/ 	__webpack_require__.n = function(module) {
 /******/ 		var getter = module && module.__esModule ?
@@ -55,15 +55,15 @@
 /******/ 		__webpack_require__.d(getter, 'a', getter);
 /******/ 		return getter;
 /******/ 	};
-/******/
+
 /******/ 	// Object.prototype.hasOwnProperty.call
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
+
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-/******/
+
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -80,7 +80,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(4)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_common_1) {
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_common_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var SyncNodeLocal = (function (_super) {
@@ -101,8 +101,6 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         __extends(SyncNodeClient, _super);
         function SyncNodeClient() {
             var _this = _super.call(this) || this;
-            _this.isSocketOpen = false;
-            _this.queuedMessages = [];
             if (!('WebSocket' in window)) {
                 throw new Error('SyncNode only works with browsers that support WebSockets');
             }
@@ -114,21 +112,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
             //});
         }
         SyncNodeClient.prototype.socketOnOpen = function (msg) {
-            this.isSocketOpen = true;
             console.log('connected!');
-            this.sendQueuedMessages();
             this.emit('open');
-        };
-        SyncNodeClient.prototype.sendQueuedMessages = function () {
-            while (this.queuedMessages.length) {
-                var msg = this.queuedMessages.shift();
-                if (msg)
-                    this.send(msg);
-            }
         };
         SyncNodeClient.prototype.socketOnClosed = function (msg) {
             var _this = this;
-            this.isSocketOpen = false;
             console.log('Socket connection closed: ', msg);
             this.emit('closed');
             setTimeout(function () {
@@ -153,12 +141,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
             this.emit('error', msg);
         };
         SyncNodeClient.prototype.send = function (msg) {
-            if (this.isSocketOpen) {
-                this.socket.send(msg);
-            }
-            else {
-                this.queuedMessages.push(msg);
-            }
+            this.socket.send(msg);
         };
         SyncNodeClient.prototype.tryConnect = function () {
             console.log('connecting...');
@@ -1083,28 +1066,6 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(0), __webpack_require__(1)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_client_1, Views_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var mainView = new Views_1.MainView();
-    mainView.init();
-    document.body.appendChild(mainView.el);
-    var client = new syncnode_client_1.SyncNodeClient();
-    var reload = client.subscribe('reload');
-    reload.on('reload', function () { return window.location.reload(); });
-    var channel = client.subscribe('checklists');
-    channel.on('updated', function () {
-        console.log('updated: ', channel.data);
-        mainView.update(channel.data);
-    });
-}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1509,6 +1470,28 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
         return SyncNodeChannel;
     }(SyncNodeEventEmitter));
     exports.SyncNodeChannel = SyncNodeChannel;
+}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(0), __webpack_require__(1)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, syncnode_client_1, Views_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var mainView = new Views_1.MainView();
+    mainView.init();
+    document.body.appendChild(mainView.el);
+    var client = new syncnode_client_1.SyncNodeClient();
+    var reload = client.subscribe('reload');
+    reload.on('reload', function () { return window.location.reload(); });
+    var channel = client.subscribe('dnd');
+    channel.on('updated', function () {
+        console.log('updated: ', channel.data);
+        mainView.update(channel.data);
+    });
 }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
