@@ -5,10 +5,10 @@ import { SyncServer, SyncNodePersistFile, watch } from 'syncnode-server';
 
 const app = express();
 const server = http.createServer(app);
-const persistThreads = new SyncNodePersistFile('testdata/threads.json', { threads: { active: {}, archived: {}}});
-const persistMrm = new SyncNodePersistFile('testdata/mrm.json', { mrms: {}});
-const persistChecklists = new SyncNodePersistFile('testdata/checklists.json', { checklists: {}});
-const persistDnd = new SyncNodePersistFile('testdata/dnd.json', { toons: {}});
+const persistThreads = new SyncNodePersistFile('../private/threads.json', { threads: { active: {}, archived: {}}});
+const persistMrm = new SyncNodePersistFile('../private/mrm.json', { mrms: {}});
+const persistChecklists = new SyncNodePersistFile('../private/checklists.json', { checklists: {}});
+const persistDnd = new SyncNodePersistFile('../private/dnd.json', { toons: {}});
 
 
 const sync = new SyncServer(server);
